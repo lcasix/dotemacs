@@ -1,0 +1,2016 @@
+#+TITLE: Configurazione di Emacs
+#+DATE: [2020-02-05 mer 22:38]
+#+AUTHOR: Leonardo Casini
+#+EMAIL: mail@leonardocasini.net
+
+#+LANGUAGE: it
+#+SELECT_TAGS: export
+#+EXCLUDE_TAGS: noexport
+#+CREATOR: Emacs 25.2.2 (Org mode 9.1.7)
+
+#+OPTIONS: ':nil *:t -:t ::t <:active H:3 \n:nil ^:t arch:headline
+#+OPTIONS: author:t c:nil creator:nil d:(not "LOGBOOK") date:t e:t
+#+OPTIONS: email:nil f:t inline:t num:t p:nil pri:nil prop:nil stat:t
+#+OPTIONS: tags:t tasks:t tex:t timestamp:t title:t toc:t todo:t |:t
+
+#+STARTUP: content
+
+
+Questo è la mia configurazione di Emacs. Ho usato lo stile /literate
+programming/ perché contenesse non solo il codice, ma anche la
+documentazione e i miei flussi di lavoro.
+
+Ho marcato con il tag =:env:= tutte le configurazioni che leggono
+qualche variabili d'ambiente, per poterle trovare facilmente.
+
+* Setup di base
+
+** Pacchetti esterni
+Esistono tantissimi pacchetti esterni che estendono le funzionalità di
+Emacs nei modi più brillanti. Qui aggiungo alle fonti MELPA e il
+repository di Org mode. Quindi installo i pacchetti aggiuntivi
+essenziali come =use-package=. I pacchetti da installare li elenco
+nella variabile =package-list=.
+#+begin_src emacs-lisp
+(require 'package)
+
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(add-to-list 'package-archives '("org-mode" . "http://orgmode.org/elpa/") t)
+
+(setq package-list
+      '(
+        use-package
+        docker
+        docker-tramp
+        dockerfile-mode
+        flycheck-plantuml
+        flymake-jslint
+        hydra
+        ivy-hydra
+        magit
+        ob-restclient
+        org-link-minor-mode
+        org-plus-contrib
+        ox-hugo
+        ox-jira
+        systemd
+        tidy
+        yaml-mode
+        ))
+
+(package-initialize)
+
+(unless package-archive-contents
+  (package-refresh-contents))
+
+(dolist (package package-list)
+  (unless (package-installed-p package)
+    (package-install package)))
+#+end_src
+
+** Impostazioni generali
+Metto in /view mode/ i buffer che non posso modificare e aggiusto il
+salvataggio dei bookmark. Il /save place mode/ salva e ripristina
+l'ultima posizione del /point/ in un buffer, mentre il /recent files
+mode/ abilita "Open recent" nel menu "File":
+#+BEGIN_SRC emacs-lisp
+;; enable view-mode on readonly buffers
+(setq view-read-only t)
+
+;; bookmarks
+(setq bookmark-save-flag 1) ;; save everytime bookmark is changed
+
+;; save and restore point of visited files
+(save-place-mode 1)
+
+;; enable recent files
+(recentf-mode)
+#+END_SRC
+
+Voglio che il completamento dei nomi file nel minibuffer ignori le
+maiuscole.
+#+BEGIN_SRC emacs-lisp
+;; case insensitive file completion
+(setq read-file-name-completion-ignore-case t)
+#+END_SRC
+
+Infine l'/auto revert/ ricarica automaticamente un /buffer/ quando
+cambia il corrispondente file sul disco.
+#+BEGIN_SRC emacs-lisp
+(use-package autorevert
+  :config
+  (setq auto-revert-use-notify t)
+  (setq auto-revert-verbose nil) ;; turn off auto revert messages
+  (global-auto-revert-mode))
+
+#+END_SRC
+
+** Scratch buffer
+Il pacchetto =scratch= crea rapidamente degli /scratch buffer/ simili
+a quello di default per /elisp/, ma con lo stesso /major mode/ che si
+sta utilizzando.
+#+BEGIN_SRC emacs-lisp
+(use-package scratch
+  :ensure t
+  :bind (("C-c s" . scratch)))
+#+END_SRC
+
+** Dashboard
+/Dashboard/ per la selezione rapida di un buffer.
+#+begin_src emacs-lisp
+;; dashboard
+(use-package dashboard
+  :ensure t
+  :config
+  (setq dashboard-items '((recents . 5) (bookmarks . 8) (projects . 5) (agenda . 10) (registers . 5))
+        initial-buffer-choice (lambda () (switch-to-buffer "*dashboard*")))
+  (dashboard-setup-startup-hook))
+#+end_src
+
+** Informazioni personali                                               :env:
+Qui leggo dall'ambiente le variabili di carattere generale e le
+assegno a delle variabili globali di Emacs in modo che siano sempre
+disponibili quando servono.
+#+begin_src emacs-lisp
+;; user info
+(setq user-full-name (getenv "EMACS_USER_FULL_NAME"))
+#+end_src
+
+** Help
+Quando si digita un /prefix key/ (=C-x=, =C-c= o altri), /Which key/
+fornisce indicazioni sulle combinazioni disponibili:
+#+BEGIN_SRC emacs-lisp
+(use-package which-key
+  :ensure t
+  :config (which-key-mode))
+#+END_SRC
+
+Inoltre è utile uno /shortcut/ per aprire rapidamente il manuale di
+Org mode.
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-h o") 'org-info)
+#+end_src
+
+
+* Editing
+In questa sezione si tratta l'editing vero e proprio. Sono configurate
+e riepilogate le funzionalità che riguardano la scrittura del testo
+quali selezione, copia & incolla, navigazione fra le righe e i buffer,
+ricerche nel testo e sostituzioni.
+
+** Charset
+Impostazione del charset a UTF-8.
+#+BEGIN_SRC emacs-lisp
+;; charset and coding
+(prefer-coding-system 'utf-8)
+(setq coding-system-for-read 'utf-8)
+(setq coding-system-for-write 'utf-8)
+(setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
+#+END_SRC
+
+** Impostazioni generali
+Qui imposto le modalità di funzionamento generali che rendono l'editor
+più funzionale e pratico.
+
+Alcuni comportamenti fondamentali per me sono:
+- /pairing/ delle parentesi;
+- a capo automatico in modo testo e indicazione della colonna nella
+  /mode line/;
+- inoltre è ormai pratica diffusa usare solo spazi nelle indentazioni,
+  anziché tab, quindi mi adeguo.
+#+BEGIN_SRC emacs-lisp
+;; indentation with no tabs
+(setq-default indent-tabs-mode nil)
+
+;; turn on electric pair mode globally
+(electric-pair-mode t)
+
+;; turn on auto-fill in text mode
+(add-hook 'text-mode-hook 'turn-on-auto-fill)
+
+;; turn on column number
+(column-number-mode)
+#+END_SRC
+
+Poi abilito globalmente le abbreviazioni e semplifico la navigazione
+delle posizioni.
+#+BEGIN_SRC emacs-lisp
+;; enable abbrev mode globally
+(setq-default abbrev-mode t)
+
+;; dopo il primo C-u C-SPC basta C-SPC per il pop della mark history
+(setq set-mark-command-repeat-pop t)
+#+END_SRC
+
+Mi piace avere l'indicazione visuale della riga corrente. È comodo
+anche evidenziare le coppie di parentesi corrispondenti.
+#+BEGIN_SRC emacs-lisp
+;; current line highlighting
+(use-package hl-line
+  :config
+  (set-face-foreground 'highlight nil) ;; fix syntax highlighting with hl-line-mode
+  (global-hl-line-mode))
+
+(use-package paren
+  :hook (after-init . show-paren-mode))
+#+END_SRC
+
+** Editing
+Un riepilogo di funzionalità utili quando si lavora sul testo:
+| function                         | binding   |
+|----------------------------------+-----------|
+| insert space after point         | =C-M-SPC= |
+| smart newline (not in Org)       | =S-RET=   |
+| smart newline above (not in Org) | =M-S-RET= |
+| put exactly one space at point   | =M-\=     |
+| leave no space at point          | =M-0 M-\= |
+| insert newline after point       | =C-o=     |
+| delete blank lines around point  | =C-x C-o= |
+| join next line                   | =C-^=     |
+| set fill column to /arg/         | =C-x f=   |
+| prefix each line with /arg/      | =C-x .=   |
+| comment/uncomment region         | =C-x /=   |
+|----------------------------------+-----------|
+| auto completion                  | =M-/=     |
+|----------------------------------+-----------|
+| search                           | =C-s=     |
+| occur (enhanced search)          | =M-s o=   |
+| search & replace                 | =C %=     |
+|----------------------------------+-----------|
+| highlight text                   | =M-s h r= |
+| un-highlight text                | =M-s h u= |
+|----------------------------------+-----------|
+| scale text decrease              | =C-x C--= |
+| scale text increase              | =C-x C-+= |
+| scale text reset                 | =C-x C-0= |
+
+Qui abilito alcune funzionalità avanzate per l'editing e ne faccio il
+/bind/. Alcune sono assegnate a combinazioni diverse, per cui le
+riorganizzo.
+#+begin_src emacs-lisp
+;; general editing keybindings
+(global-set-key (kbd "C-x /") 'comment-or-uncomment-region)
+(global-set-key (kbd "M-/") 'hippie-expand)
+(global-set-key (kbd "M-\\") 'just-one-space)
+(global-set-key (kbd "C-x M-o") 'delete-horizontal-space)
+#+end_src
+
+Il pacchetto [[https://github.com/bbatsov/crux][Crux]] contiene numerosissime funzioni di utilità
+generale, nonché alcune versioni migliorate di quelle standard.
+#+BEGIN_SRC emacs-lisp
+(use-package crux
+  :ensure t
+  :demand t
+  :config
+  (global-set-key [remap move-beginning-of-line] #'crux-move-beginning-of-line)
+  (global-set-key [remap kill-line] #'crux-smart-kill-line)
+  (crux-reopen-as-root-mode t)
+  :bind
+  (("S-<return>" . crux-smart-open-line)
+   ("M-S-<return>" . crux-smart-open-line-above)
+   ("C-S-k" . crux-kill-whole-line)
+   ("C-j" . crux-top-join-line)
+   ("C-^" . crux-top-join-line)
+   ("C-x 4 t" . crux-transpose-windows)))
+#+END_SRC
+
+Il pacchetto [[https://github.com/benma/visual-regexp.el][visual-regexp]] fornisce una versione molto visuale della
+funzionalità il "search & replace":
+#+begin_src emacs-lisp
+(use-package visual-regexp
+  :ensure t
+  :bind (("M-%" . vr/query-replace)))
+
+(use-package visual-regexp-steroids
+  :ensure t
+  :after visual-regexp)
+#+end_src
+
+** Marking
+/Binding/ per la selezione di una /region/:
+| function              | binding   |
+|-----------------------+-----------|
+| place mark            | =C-SPC=   |
+| invert mark and point | =C-x C-x= |
+| rectangle mark mode   | =C-x SPC= |
+| mark /arg/ words      | =M-@=     |
+| mark paragraph        | =M-h=     |
+| mark buffer           | =C-x h=   |
+| mark current function | =C-M-h=   |
+| expand region         | =C-@=     |
+|-----------------------+-----------|
+| rectangle mark        | =C-x SPC= |
+| fill rectangle        | =C-x r t= |
+
+/Expand region/ esegue un'espansione incrementale della /region/ per
+"unità semantiche", anche in base al /major mode/.
+#+BEGIN_SRC emacs-lisp
+(use-package expand-region :ensure t
+  :bind ("C-@" . er/expand-region))
+#+END_SRC
+
+** Killing & yanking
+Principali funzioni per il taglio del testo:
+| function                       | binding     |
+|--------------------------------+-------------|
+| copy region                    | =M-y=       |
+| kill region                    | =C-w=       |
+| kill whole line                | =C-K=       |
+| kill espression                | =C-M-k=     |
+| copy region                    | =C-x r M-w= |
+| kill rectangle                 | =C-x r k=   |
+| zap to char (char excluded)    | =M-z=       |
+| zap up to char (char included) | =C-M-z=     |
+| yank                           | =C-y=       |
+| yank pop                       | =M-y=       |
+| yank rectangle                 | =C-x r y=   |
+|--------------------------------+-------------|
+| save region to register        | =C-x r s=   |
+| insert text from register      | =C-x r i=   |
+|--------------------------------+-------------|
+| append region to buffer        | =C-x a b=   |
+| append region to file          | =C-x a f=   |
+
+/Avy zap/ taglia usando il puntamento basato sui caratteri (vedi
+[[https://github.com/cute-jumper/avy-zap][repository]] GitHub):
+#+BEGIN_SRC emacs-lisp
+(use-package avy-zap
+  :ensure t
+  :bind (("M-z" . avy-zap-up-to-char-dwim)
+         ("C-M-z" . avy-zap-to-char-dwim)))
+#+END_SRC
+
+Una funzione che trovo utile di tanto in tanto è il trasferimento
+immediato di una /region/ in un buffer, risparmiando la fase di
+/kill/.
+#+begin_src emacs-lisp
+;; append to file/buffer
+(global-set-key (kbd "C-x a b") 'append-to-buffer)
+(global-set-key (kbd "C-x a f") 'append-to-file)
+#+end_src
+
+** Navigazione
+| function          | binding |
+|-------------------+---------|
+| jump              | =s-SPC= |
+|-------------------+---------|
+| bookmark position | =C-x P= |
+| jump to position  | =C-x p= |
+
+Per spostarmi nel testo uso il puntamento basato sui caratteri invece
+del mouse. Molto più comodo ed efficiente.
+#+begin_src emacs-lisp
+(use-package ace-jump-mode
+  :ensure t
+  :bind (("s-SPC" . ace-jump-mode)))
+#+end_src
+
+Utilizzo molto i registri delle posizioni come /boomark/ per raggiungere
+velocemente i punti dei /buffer/ che mi interessano, così gli ho
+assegnati dei /binding/ più immediati.
+#+begin_src emacs-lisp
+;; easier point registers
+(global-set-key (kbd "C-x P") 'point-to-register)
+(global-set-key (kbd "C-x p") 'jump-to-register)
+#+end_src
+
+** Beacon mode
+Il /beacon mode/ fa "brillare" il cursore in una serie di circostanze,
+per esempio quando ci si sposta di una pagina o si cambia finestra,
+per non perderlo di vista. Se non lo si vede più si può farlo brillare
+con =C-<menu>= (il tasto con il "menu" sulle tastiere per Windows,
+posizionato accanto al "control" destro).
+#+BEGIN_SRC emacs-lisp
+(use-package beacon :ensure t
+  :hook (after-init . beacon-mode)
+  :config
+  (global-set-key (kbd "C-<menu>") 'beacon-blink))
+#+END_SRC
+
+** Wrap region
+/Wrap region/ "avvolge" (/wrap/) una /region/, cioè aggiunge un
+carattere all'inizio e alla fine come una coppia di parentesi. Molto
+utile per la formattazione in Org mode e parentesi "esotiche" (tipo
+quelle angolari tipiche dei tag XML).
+#+BEGIN_SRC emacs-lisp
+;; wrap-region setup with custom wrappers
+(use-package wrap-region
+  :ensure t
+  :config
+  (wrap-region-add-wrappers
+   '(("=" "=" nil org-mode)
+     ("/" "/" nil org-mode)
+     ("*" "*" nil org-mode)
+     ("~" "~" nil org-mode)
+     ("+" "+" nil org-mode)
+     )))
+#+END_SRC
+
+** TODO Ricerca
+#+begin_comment
+Vorrei ristrutturare la ricerca con un bel menu di Hydra, così posso
+usare un solo /binding/ e avere la scelta fra find e i comandi di ag
+(project, file, ecc.)
+#+end_comment
+
+La ricerca di elementi sul filesystem è fondamentale e Emacs ne
+fornisce un supporto completo. Questi sono i miei /binding/:
+| grep                             | =C-c C-x g= |
+| find                             | =C-c C-x f= |
+
+Il venerando =grep= è sempre nel mio cuore, ma oggi esistono
+alternative molto più veloci. Uno di queste è /Silver Searcher/, o
+=ag=, che su Debian si può installare così:
+#+begin_src sh
+apt install silversearcher-ag
+#+end_src
+
+Il pacchetto [[https://github.com/Wilfred/ag.el][ag]] ([[https://agel.readthedocs.io/en/latest/][documentazione]]) supporta in Emacs questa alternativa
+a =grep=:
+#+begin_src emacs-lisp
+(use-package ag
+  :ensure t
+  :bind ("C-c C-x g" . ag))
+
+(global-set-key (kbd "C-c C-x f") 'find-dired)
+#+end_src
+
+** Ledger
+[[https://www.ledger-cli.org/][Ledger]] è un sistema di contabilità a partita doppia che utilizza un
+formato testuale per le transazioni. Il [[https://www.ledger-cli.org/3.0/doc/ledger-mode.html][ledger-mode]] per Emacs aiuta
+notevolmente durante l'inserimento e l'editing di queste transazioni.
+#+begin_src emacs-lisp
+(use-package ledger-mode
+  :ensure t
+  :mode "\\.ledger$"
+  :bind (:map ledger-mode-map
+              ("C-c C-x k". ledger-copy-transaction-at-point)
+              ("C-c C-x b" . ledger-mode-clean-buffer)))
+
+(use-package flycheck-ledger
+  :ensure t
+  :after flycheck
+  :hook (ledger-mode . flycheck-mode))
+#+end_src
+Oltre ad attivare il /major mode/ per i file con estensione =.ledger=
+abilito il [[*Syntax checking][syntax checking]], che fra le cose utili controlla anche che
+il /balance/ di una transazione sia zero come richiesto dalla partita
+doppia.
+
+
+* Ivy Swiper Counsel
+Promemoria di alcuni /binding/ di Ivy. Per i dettagli c'è il [[https://oremacs.com/swiper/][manuale]]
+completo.
+| next/prev candidate                   | =C-n=     | =C-p=   |
+| first/last candidate                  | =M-<=     | =M->=   |
+| scroll up/down                        | =C-v=     | =M-v=   |
+| jump                                  | =C-'=     |         |
+| next/prev from history                | =M-n=     | =M-p=   |
+| ivy occur                             | =C-c C-o= |         |
+| call on selected candidate            | =C-m=     | =RET=   |
+| call on candidate (no exit)           | =C-M-m=   |         |
+| call on next/prev candidate (no exit) | =C-M-n=   | =C-M-p= |
+| call on current input                 | =C-M-j=   |         |
+| select current input for editing      | =M-i=     |         |
+| list valid actions                    | =M-o=     |         |
+| list valid actions (no exit)          | =C-M-o=   |         |
+| copy candidate to kill ring           | =M-w=     |         |
+| hydra menu                            | =C-o=     |         |
+| push view                             | =C-s--=   |         |
+| pop view                              | =C-s-_=   |         |
+
+** Setup di Ivy
+Ivy è un frontend per il completamento dei nomi e non solo. Imprescindibile.
+#+BEGIN_SRC emacs-lisp
+;; ivy completion setup
+(use-package ivy
+  :ensure t
+  :demand t
+  :config
+  (setq ivy-use-virtual-buffers t)
+  (setq ivy-count-format "(%d/%d) ") ;; original format "%-4d "
+  (setq enable-recursive-minibuffers t)
+  (ivy-mode 1)
+  (global-set-key [remap yank-pop] #'counsel-yank-pop)
+  ;; workspace-like management
+  (global-set-key (kbd "C-s--") 'ivy-push-view)
+  (global-set-key (kbd "C-s-_") 'ivy-pop-view)
+  :bind
+  (("C-s" . swiper)
+   ("C-c C-r" . ivy-resume)))
+#+END_SRC
+- =ivy-use-virtual-buffers= significa che quando si cerca un buffer
+  vengono aggiunti alla lista anche i file recenti e i bookmark; utilissimo
+- =enable-recursive-minibuffers= permette di aprire un nuovo
+  minibuffer mentre lo si sta usando con un altro comando
+- sostituisco lo =yank-pop= con quello di /Counsel/
+- faccio il binding di =ivy-push-view= e =ivy-pop-view=, due funzioni
+  che salvano e ripristinano il layout delle /window/
+- /Swiper/ è un sostituto di /isearch/ che fa uso di Ivy
+
+** Setup di Counsel
+/Counsel/ implementa varie funzioni che fanno uso di Ivy e Swiper,
+alcune delle quali vanno a sostituire quelle di default.
+#+BEGIN_SRC emacs-lisp
+(use-package counsel
+  :ensure t
+  :demand t
+  :bind
+  (("M-x" . counsel-M-x)
+   ("C-x C-f" . counsel-find-file)
+   ("C-h f" . counsel-describe-function)
+   ("C-h v" . counsel-describe-variable)
+   ("C-h l" . counsel-find-library)
+   ("C-h s" . counsel-info-lookup-symbol)
+   ("C-h u" . counsel-unicode-char)
+   ("C-c f" . counsel-git)
+   ("C-c g" . counsel-git-grep)
+   ("C-c k" . counsel-ag)
+   ("C-x l" . counsel-locate)))
+#+END_SRC
+
+** Counsel Tramp
+/Counsel Tramp/ apre una connessione via Tramp scelta da un menu Ivy.
+#+begin_src emacs-lisp
+(use-package counsel-tramp
+  :ensure t
+  :after counsel
+  :bind (("C-x t" . counsel-tramp)))
+#+end_src
+
+
+* Projectile
+/Projectile/ è un'estensione indispensabile per gestire progetti di
+qualunque tipo, aggiungendo le tipiche funzionalità di un IDE.
+
+Qui un riepilogo delle funzioni più utili. Per i dettagli c'è il [[https://docs.projectile.mx/][manuale]].
+| functionality                    | custom binding                                              | default binding         |
+|----------------------------------+-------------------------------------------------------------+-------------------------|
+| open file                        | =C-s-f= / =C-s-4 f=                                         | =C-c p f=               |
+| open dir                         | =C-s-d= / =C-s-4 d=                                         | =C-c p d=               |
+| open project                     | =C-s-p=                                                     | =C-c p p=               |
+| switch buffer                    | =C-s-b=                                                     | =C-c p b=               |
+| open root dir                    | =C-s-D=                                                     | =C-c p D=               |
+| open VC                          | =C-s-v=                                                     | =C-c p v=               |
+| save all buffers                 |                                                             | =C-c p S=               |
+| kill all buffers                 |                                                             | =C-c p k=               |
+|----------------------------------+-------------------------------------------------------------+-------------------------|
+| counsel git (find)               | =C-c f=                                                     |                         |
+| counsel git-grep (grep)          | =C-c g=                                                     |                         |
+| counsel ag                       | =C-c k=                                                     |                         |
+| search in project                | =M-s s=                                                     | =C-c p s s=             |
+| search symbol in project         | =M-s .=                                                     |                         |
+| repeat last search               | =C-s-r=                                                     | =C-c C-r=               |
+| replace in project               |                                                             | =C-c p r=               |
+|----------------------------------+-------------------------------------------------------------+-------------------------|
+| shell/async command in proj root | =C-s-!/&=                                                   | =C-c p !/&=             |
+| run eshell/shell/term            | =C-s-x e/s/t=                                               | =C-c p x e/s/t=         |
+| counsel projectile               | =C-s-SPC= / =M-SPC=                                         | =C-c p SPC= / =M-SPC=   |
+| recent file/buffer               | =C-s-LEFT= / =C-s-RIGHT=                                    | =C-c p e= / =C-c p ESC= |
+|----------------------------------+-------------------------------------------------------------+-------------------------|
+| remove project from list         | =M-x projectile-remove-known-project=                       |                         |
+| remove current project from list | =M-x projectile-remove-current-project-from-known-projects= |                         |
+| remove file from project cache   | =M-x projectile-purge-file-from-cache=                      |                         |
+
+** Setup di Projectile
+Projectile è molto personalizzabile, per cui ho fatto qualche modifica
+ai default e ai /binding/. Inoltre ho definito un tipo di progetto per
+[[https://quasar.dev/][Quasar]], un framework con cui sviluppo.
+
+Ho aggiunto anche una piccola funzione =lc/counsel-ag-symbol-at-point=
+che usa la ricerca di /Counsel/ per cercare nel progetto le occorrenze
+del simbolo sotto il /point/.
+
+#+BEGIN_SRC emacs-lisp
+(use-package projectile
+  :ensure t
+  :after (ivy counsel)
+  :preface
+  (defun lc/counsel-ag-symbol-at-point ()
+    "Search in project for symbol at point. With prefix specify
+search args."
+    (interactive)
+    (counsel-ag (thing-at-point 'symbol) (projectile-project-root)))
+  :config
+  (setq projectile-enable-caching t
+        projectile-completion-system 'ivy
+        projectile-switch-project-action #'projectile-find-dir
+        projectile-find-dir-includes-top-level t)
+  ;; definizione project types di projectile
+  (projectile-register-project-type
+   'quasar '("quasar.conf.js")
+   :compile "npm install"
+   :test "npm test"
+   :run "quasar dev"
+   :test-suffix ".spec")
+  (projectile-mode 1)
+  :bind-keymap
+  ("s-p" . projectile-command-map)
+  :bind (:map projectile-mode-map
+        ("C-s-4 f" . projectile-find-file-other-window)
+        ("C-s-." . projectile-find-file-dwim)
+        ("C-s-4 ." . projectile-find-file-dwim-other-window)
+        ("C-s-4 d" . projectile-find-dir-other-window)
+        ("C-s-S-d" . projectile-dired)
+        ("C-s-v" . projectile-vc)
+        ("C-s-<right>" . projectile-recentf)
+        ("C-s-<left>" . projectile-project-buffers-other-buffer)
+        ("C-s-o" . projectile-multi-occur)
+        ("C-s-!" . projectile-run-shell-command-in-root)
+        ("C-s-&" . projectile-run-async-shell-command-in-root)
+        ("C-s-x s" . projectile-run-shell)
+        ("C-s-x t" . projectile-run-term)
+        ("C-s-x e" . projectile-run-eshell)
+        ("M-s ." . lc/counsel-ag-symbol-at-point)
+        ("C-s-r" . ivy-resume)))
+#+END_SRC
+
+** Counsel per Projectile
+Analogamente a Counsel, =counsel-projectile= aggiunge funzioni a
+Projectile basate su Ivy.
+#+BEGIN_SRC emacs-lisp
+(use-package counsel-projectile
+  :ensure t
+  :after (counsel projectile)
+  :commands counsel-projectile-find-dir
+  :config
+  (counsel-projectile-mode 1)
+  :bind (:map projectile-mode-map
+        ("C-s-SPC" . counsel-projectile)
+        ("C-s-f" . counsel-projectile-find-file)
+        ("C-s-d" . counsel-projectile-find-dir)
+        ("C-s-b" . counsel-projectile-switch-to-buffer)
+        ("C-s-p" . counsel-projectile-switch-project)
+        ("M-s s" . counsel-projectile-ag)))
+#+END_SRC
+
+
+* Dired
+Il /DIRectory EDitor/ è il file manager integrato in Emacs. Questi
+sono i comandi che uso di più:
+| crea directory                | =+=       |           |
+| copy                          | =C=       |           |
+| move/rename                   | =R=       |           |
+| symlink                       | =S=       |           |
+| permessi (mode)               | =M=       |           |
+| find                          | =F=       |           |
+| comando sul file (sync)       | =!=       |           |
+| comando sul file (async)      | =&=       |           |
+| archivio zip file selezionati | =z=       |           |
+| wedit mode inizio / fine      | =C-x C-q= | =C-c C-c= |
+
+Quando si lanciano i comandi sui file (=!= e =&=) si possono usare i
+segnaposto =*= e =?= per passare i file selezionati come argomenti:
+- =*= esegue il comando una sola volta passando come argomenti /tutti/
+  i file selezionati;
+- =?= esegue il comando più volte, una /per ogni/ file selezionato.
+
+La funzione per creare gli archivi /zip/ e il keybinding sono definiti
+qui.
+#+BEGIN_SRC emacs-lisp
+(use-package dired
+  :config
+  (defun lc/dired-compress-marked-files (filename)
+    "Create an archive containing che marked files."
+    (interactive "FArchive file name to create: ")
+    (shell-command
+     (concat "zip " filename " "
+             (reduce (lambda(n1 n2) (concat n1 " " n2))
+                     (mapcar 'file-name-nondirectory (dired-get-marked-files))))))
+  :bind (:map dired-mode-map
+              ("z". lc/dired-compress-marked-files)))
+#+END_SRC
+
+Uso le estensioni per "nascondere" certi file (/omit mode/) (come le
+directory create da [[https://github.com/gpoore/minted][minted]]) e utilizzarne alcune funzioni.
+#+BEGIN_SRC emacs-lisp
+;; dired extensions setup; see https://www.emacswiki.org/emacs/DiredOmitMode
+(use-package dired-x
+  :after autorevert
+  :config
+  (setq dired-omit-files (concat dired-omit-files "\\|^_minted-"))
+  :bind (:map dired-mode-map
+              ("S" . dired-do-relsymlink)
+              ("F" . find-dired))
+  :hook ((dired-mode . dired-omit-mode)
+         (dired-mode . auto-revert-mode)))
+#+END_SRC
+
+
+* Org Mode
+Org mode è un componente chiave di tutto il mio workflow. In questa
+sezione faccio il setup delle componenti che utilizzo. Alcune
+informazioni sono lette dall'ambiente, soprattutto i /path/, che sono
+molto specifici.
+
+Riepilogo qui le variabili usate:
+- =EMACS_COMMONPLACE=, il /path/ al file di default di Org; viene
+  assegnato alla variabile =org-default-notes-file=; il default è
+  =~/commonplace.org=
+- =EMACS_AGENDA_EXPORT=, il /path/ al file di esportazione dell'agenda
+  combinata; viene assegnato alla variabile
+  =org-icalendar-combined-agenda-file=; il default è
+  =~/org-agenda.ics=
+
+** Org setup                                                            :env:
+Qui eseguo il caricamento di Org e faccio alcune impostazioni di
+base.
+#+begin_src emacs-lisp
+(use-package org
+  :ensure t
+  :bind
+  ;; org-mode global key bindings
+  (("C-c l" . org-store-link)
+   ("C-c c" . org-capture)
+   ("C-c a" . org-agenda)
+   ("C-c L" . org-insert-link-global)
+   ("C-c o" . org-open-at-point-global))
+  ;; custom keybindings
+  (:map org-mode-map
+        ("C-c C-x g" . grep)
+        ("M-N" . counsel-org-goto))
+
+  :config
+  (require 'org-id)
+
+  ;; note non indentate secondo il livello dell'heading
+  (setq org-adapt-indentation nil)
+
+  ;; enabling wrap-region
+  (add-hook 'org-mode-hook 'wrap-region-mode)
+
+  ;; babel block native fontification and indentation
+  (setq org-src-tab-acts-natively t)
+  (setq org-src-fontify-natively t)
+
+  ;; babel block src indentation
+  (setq org-edit-src-content-indentation 0)
+  
+  ;; TODO sono necessari?
+  ;; enable org-mode for .org and .org.txt files
+  (add-to-list 'auto-mode-alist '("\\.org\\(\\.txt\\)?$" . org-mode))
+  (setq org-agenda-file-regexp "\\.org\\(\\.txt\\)?$")
+  
+  ;; refile targets
+  (setq org-outline-path-complete-in-steps nil)
+  (setq org-refile-use-outline-path 'full-file-path)
+  (setq org-refile-targets '((org-agenda-files . (:maxlevel . 3))))
+  
+  ;; log state changes into LOGBOOK drawer
+  (setq org-log-into-drawer t)
+
+  ;; log notes in chronological order (oldest first)
+  (setq org-log-states-order-reversed nil)
+
+  ;; redefine default TODO workflow
+  (setq org-todo-keywords
+        '((sequence "TODO" "NEXT" "CURRENT" "WAITING" "MAYBE" "|" "DONE")
+          ))
+
+  ;; colors for TODO keywords
+  (setq org-todo-keyword-faces
+        '(("WAITING" . (:foreground "yellow" :weight bold))
+          ("MAYBE" . (:foreground "dim grey" :weight bold))
+          ("ONAIR" . (:foreground "cyan" :weight bold))
+          ("DISPONIBILE" . (:foreground "yellow" :weight bold))
+          ("PAGATO" . (:foreground "yellow" :weight bold))
+          ("PAGATA" . (:foreground "yellow" :weight bold))
+          ("EMESSA" . (:foreground "yellow" :weight bold))
+          ("PENDING" . (:foreground "dim grey" :weight bold))
+          ))
+
+  ;; default capture file
+  (setq org-default-notes-file (or (getenv "EMACS_COMMONPLACE") "~/commonplace.org"))
+
+  ;; Support link/copy/paste from eww to Org-mode
+  (require 'org-eww)
+
+  ;; disable <> pairing in Org
+  :hook (org-mode . (lambda ()
+   (setq-local electric-pair-inhibit-predicate
+               `(lambda (c)
+                  (if (char-equal c ?<) t (,electric-pair-inhibit-predicate c))))))
+  )
+
+;; enabling easy templates
+(use-package org-tempo
+  :after org)
+#+end_src
+
+Una delle cose che mi infastidisce in Org mode è il /pairing/ delle
+parentesi angolari (=<>=), perché non mi serve e intralcia l'uso degli
+/smart template/.
+
+** Agenda                                                               :env:
+L'agenda è una parte fondamentale. Permette sia di creare riepiloghi
+di eventi, scadenze e cose da fare, sia di effettuare ricerche fra le
+note formattate in Org mode.
+
+Alcune funzioni /helper/ che mi servono per l'agenda:
+#+begin_src emacs-lisp
+;; agenda helper functions
+(defun lc/agenda-format-date (date)
+  (format-time-string "%_8A %2e %9B %4Y" date))
+
+(defun lc/agenda-occur-category(category-match)
+  (interactive "sCategory (empty or * for all): ")
+  (org-occur-in-agenda-files (concat "+CATEGORY=" (or category-match "*"))))
+#+end_src
+
+Qui ho le mie agende personalizzate:
+- un'agenda del giorno con appuntamenti, scadenze e attività da svolgere
+- un riepilogo di attività in attesa e posticipate per farne una revisione
+- elementi da riorganizzare
+- progetti con le relative attività
+- bookmark presi rapidamente da ricollocare in modo più appropriato
+#+begin_src emacs-lisp
+(setq org-agenda-custom-commands
+      '(
+        ;; il cuore pulsante della giornata
+        ("\\" "Agenda del giorno"
+         ((agenda ""
+                  ((org-agenda-overriding-header "Agenda di oggi")
+                   (org-agenda-span 'day)
+                   (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo '("PAGATO")))
+                   ))
+          (tags-todo "-refile-project+CATEGORY=\"gestione\"|-refile-project+CATEGORY=\"scuola\"/!TODO|EMETTERE|PAGATA|DOVUTO"
+                     ((org-agenda-overriding-header "Attività di gestione")
+                      (org-agenda-todo-ignore-scheduled 'future)
+                      (org-agenda-todo-ignore-deadlines 'far)
+                      (org-agenda-tags-todo-honor-ignore-options t)
+                      (org-tags-exclude-from-inheritance (remove "project" org-tags-exclude-from-inheritance))
+                      (org-agenda-sorting-strategy '(priority-down todo-state-up))
+                      (org-agenda-prefix-format '((tags . " %i ")))))
+          (tags-todo "+project/!NEXT|CURRENT"
+                     ((org-agenda-overriding-header "Attività sui progetti")
+                      (org-tags-exclude-from-inheritance (remove "project" org-tags-exclude-from-inheritance))
+                      (org-agenda-hide-tags-regexp "noexport\\|attach")
+                      (org-agenda-prefix-format '((tags . " %i %-10:c%?-12t% s [%-14(file-name-base (buffer-file-name))] ")))
+                      ))
+          (tags-todo "-refile+CATEGORY=\"gestione\"/!WAITING|EMESSA|PAGATO"
+                     ((org-agenda-overriding-header "Attività di gestione in attesa")
+                      (org-agenda-todo-ignore-scheduled 'future)
+                      (org-agenda-todo-ignore-deadlines 'far)
+                      (org-agenda-tags-todo-honor-ignore-options t)
+                      (org-agenda-sorting-strategy '(priority-down todo-state-up))
+                      (org-agenda-prefix-format '((tags . " %i ")))))
+          (agenda ""
+                  ((org-agenda-overriding-header "La settimana")
+                   ;; (org-agenda-skip-function '(or (org-agenda-skip-entry-if 'scheduled)
+                   ;;                                (org-agenda-skip-entry-if 'todo 'done)))
+                   (org-agenda-skip-deadline-if-done t)
+                   (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled))
+                   (org-agenda-start-day "+1d")
+                   (org-agenda-span 6)
+                   ;;(org-agenda-prefix-format '((agenda . "  %-12:c%?-12t %s [%b] "))))
+                   ))
+          (todo ""
+                     ((org-agenda-overriding-header "Scadenze successive")
+                      (org-agenda-skip-function '(or (org-agenda-skip-entry-if 'notdeadline)
+                                                     (org-agenda-skip-entry-if 'todo '("PAGATO"))))
+                      (org-deadline-warning-days 42)
+                      (org-agenda-todo-ignore-deadlines 'far)
+                      ;; copied from https://lists.gnu.org/archive/html/emacs-orgmode/2016-05/msg00546.html
+                      (org-agenda-prefix-format '((todo . " %28(lc/agenda-format-date (org-read-date nil t (org-entry-get nil \"DEADLINE\"))) %s")))
+                      (org-agenda-sorting-strategy '(deadline-up))
+                      ))
+          ))
+
+        ;; review delle attività
+        ("r" "Revisione delle attività"
+         (
+          (tags-todo "-refile-CATEGORY=\"gestione\"/!WAITING"
+                     ((org-agenda-overriding-header "Attività in attesa")
+                      (org-agenda-todo-ignore-scheduled 'future)
+                      (org-agenda-todo-ignore-deadlines 'far)
+                      (org-agenda-tags-todo-honor-ignore-options t)
+                      (org-agenda-sorting-strategy '(priority-down todo-state-up))
+                      (org-agenda-prefix-format '((tags . " %i ")))))
+          (tags-todo "-refile+TODO=\"MAYBE\""
+                     ((org-agenda-overriding-header "Attività posticipate")
+                      (org-agenda-todo-ignore-scheduled 'future)
+                      (org-agenda-todo-ignore-deadlines 'far)
+                      (org-agenda-tags-todo-honor-ignore-options t)
+                      (org-agenda-sorting-strategy '(priority-down todo-state-up))
+                      (org-agenda-prefix-format '((tags . " %i ")))))
+          (tags "refile"
+                ((org-agenda-overriding-header "Elementi da riorganizzare")
+                 (org-agenda-show-inherited-tags nil)
+                 (org-tags-match-list-sublevels 'indented)
+                 (org-agenda-prefix-format '((tags . " %i ")))))
+          ))
+
+        ;; aree e progetti
+        ("p" "Aree e progetti"
+         (
+          (stuck ""
+                 ((org-agenda-overriding-header "Progetti fermi")))
+          (tags "+project"
+                ((org-agenda-overriding-header "Riepilogo dei progetti")
+                 (org-tags-exclude-from-inheritance (remove "project" org-tags-exclude-from-inheritance))
+                 (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                 (org-agenda-show-inherited-tags nil)
+                 (org-agenda-sorting-strategy nil)
+                 (org-agenda-prefix-format '((tags . " %i %-10:c%?-12t% s [%-14(file-name-base (buffer-file-name))] ")))
+                 ))
+          ))
+
+        ;; ricerca file per aree
+        ("c" "Cerca agenda per aree" org-occur-in-agenda-files (concat "+CATEGORY: " (read-string "Area (vuoto per tutte): ")))
+
+        ;; note sulle spese non registrate
+        ("ns" "Spese non registrate" tags "+spese")
+
+        ;; bookmarks
+        ("nb" "Bookmarks" tags "+bookmark")
+        ))
+
+;; stuck project definition
+(add-to-list 'org-tags-exclude-from-inheritance "project")
+(setq org-stuck-projects
+      '("+project/-MAYBE-DONE" ("NEXT")))
+#+end_src
+
+Alcune impostazioni per esportare l'agenda in formato ICS.
+#+begin_src emacs-lisp
+;; calendar & org agenda exporting
+(setq calendar-week-start-day 1) ;; set monday as first day of week
+(setq org-icalendar-timezone "Europe/Rome")
+(setq org-icalendar-combined-agenda-file (or (getenv "EMACS_AGENDA_EXPORT") "~/org-agenda.ics"))
+(setq org-agenda-default-appointment-duration 60)
+(setq org-icalendar-include-body nil)
+#+end_src
+
+** Exporting
+Mi piace tantissimo poter "esportare" i file Org in vari formati
+adatti alla presentazione, come i file PDF.
+
+*** Latex
+Il Latex è il formato da cui si ricavano i documenti PDF. Ho
+personalizzato l'esportazione in questo formato perché ne faccio largo
+uso anche per lavoro.
+
+#+begin_src emacs-lisp
+(require 'ox-latex)
+
+(unless (boundp 'org-latex-classes)
+  (setq org-latex-classes nil))
+
+(add-to-list 'org-latex-classes
+             '("article"
+               "\\documentclass{article}"
+               ("\\section{%s}" . "\\section*{%s}")
+               ("\\subsection{%s}" . "\\subsection*{%s}")
+               ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+	       ))
+
+(add-to-list 'org-latex-classes
+             '("letter"
+               "\\documentclass{letter}"))
+
+(add-to-list 'org-latex-classes
+	     '("newsletter" "\\documentclass{lc-newsletter}"
+	       ("\\section{%s}" . "\\section*{%s}")
+               ("\\subsection{%s}" . "\\subsection*{%s}")
+               ))
+
+(add-to-list 'org-latex-packages-alist '("" "babel"))
+(add-to-list 'org-latex-packages-alist '("" "listings"))
+
+(setq org-latex-listings 'minted)
+(add-to-list 'org-latex-packages-alist '("" "minted"))
+(add-to-list 'org-latex-minted-langs '(restclient "http"))
+(setq org-latex-minted-options
+      '(("breaklines=true")))
+
+(setq org-latex-pdf-process
+      '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+        "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+        "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+#+end_src
+
+*** Reveal                                                              :env:
+[[https://revealjs.com/][Reveal.js]] è un ottimo framework per creare splendide presentazioni in
+HTML. Per esportare le presentazioni da Org, alla maniera di
+Beamer, occorre innanzitutto [[https://revealjs.com/installation/][installarlo]] in una directory:
+#+begin_src sh :eval no
+git clone https://github.com/hakimel/reveal.js.git
+#+end_src
+
+Poi bisogna configurare [[https://github.com/yjwen/org-reveal/][ox-reveal]]. Come spiegato nella [[https://github.com/yjwen/org-reveal#set-the-location-of-revealjs][documentazione]],
+è meglio fornire una URI assoluta alla directory di Reveal, perché
+verrà inclusa nella pagina HTML della presentazione e il browser deve
+poterla trovare.
+#+begin_src emacs-lisp
+(use-package ox-reveal
+  :ensure t
+  :config
+  (setq org-reveal-root (or (getenv "EMACS_REVEALJS_DIRECTORY") org-reveal-root)))
+#+end_src
+
+Ho assegnato la URI alla variabile =EMACS_REVEALJS_DIRECTORY=. Il
+default è lo stesso di /ox-reveal/: stando alla documentazione è
+=./reveal.js=, relativamente al file Org da cui si esporta la
+presentazione.
+
+Si può specificare per il singolo file con l'opzione =REVEAL_ROOT=,
+per esempio usando un CDN:
+#+begin_src org
+#+REVEAL_ROOT: https://cdn.jsdelivr.net/npm/reveal.js
+#+end_src
+
+*** Altri backend
+Qui abilito altri formati di esportazione che utilizzo, ma che non
+sono attivi di /default/:
+- per il generatore di siti statici Hugo
+- nel formato Epub per esportare i file come e-book
+- Taskjuggler per il /project managing/
+#+begin_src emacs-lisp
+;; other backends
+(add-hook 'after-init-hook
+          (lambda ()
+            (require 'ox-hugo)
+            (require 'ox-epub)
+            (require 'ox-taskjuggler)
+            ))
+#+end_src
+
+*** Filtri
+Registro alcuni filtri per personalizzare le esportazioni:
+#+begin_src emacs-lisp
+(defun lc/icalendar-hide-timestamps (text backend info)
+  "Rimuove i tag delle date nel risultato finale dell'esportazione icalendar."
+  (when (org-export-derived-backend-p backend 'icalendar)
+    ""
+    )
+  )
+      
+(defun lc/latex-example-as-listing (text backend info)
+  "Esporta in LaTeX i blocchi EXAMPLE come lstlisting"
+  (when (and (org-export-derived-backend-p backend 'latex)
+	     (string-equal "article" (plist-get info :latex-class)))
+    (let ((text (replace-regexp-in-string "\\\\begin{verbatim}" "\\\\begin{lstlisting}" text)))
+	  (replace-regexp-in-string "\\\\end{verbatim}" "\\\\end{lstlisting}" text))
+    )
+  )
+
+(eval-after-load 'ox
+  (lambda ()
+    (add-to-list 'org-export-filter-example-block-functions
+		 'lc/latex-example-as-listing)
+    (add-to-list 'org-export-filter-timestamp-functions
+		 'lc/icalendar-hide-timestamps)
+    ))
+#+end_src
+
+** Crittografia
+Abilito il supporto alla crittografia. Questo consente sia di avere
+delle /entry/ cifrate in un Org file (contrassegnate con il tag
+=:crypt:=), che di cifrare un intero documento (se ha l'estensione
+=.org.gpg=).
+
+#+begin_src emacs-lisp
+(use-package org-crypt
+  :config
+  (org-crypt-use-before-save-magic)
+  (add-to-list 'org-tags-exclude-from-inheritance "crypt")
+  (setq org-crypt-key nil)
+  :bind (:map org-mode-map
+              ("C-c M-d" . org-decrypt-entry)))
+#+end_src
+
+Impostando la variabile =org-crypt-key= a =nil= si effettua una
+cifratura con algoritmo simmetrico, per cui verrà chiesta la
+/passphrase/. Per usare una chiave GPG se ne deve assegnare l'ID alla
+variabile.
+
+L'/auto saving/ di Emacs non coesiste bene con org-crypt, per cui è
+consigliabile disabilitarlo nei buffer che contengono /entry/ cifrate,
+aggiungendo in cima al documento:
+#+begin_src elisp
+# -*- buffer-auto-save-file-name: nil; -*-
+#+end_src
+
+** TODO Capture
+#+begin_comment
+Un po' di spiegazioni sulla configurazione del browser e sugli advice
+che vengono registrati. Si vedano i link:
+- http://www.diegoberrocal.com/blog/2015/08/19/org-protocol/
+- https://github.com/sprig/org-capture-extension
+#+end_comment
+
+#+begin_src emacs-lisp
+(use-package org-capture
+  :after org
+  :config
+  (require 'org-protocol)
+
+  ;; capture templates
+  (setq org-capture-templates
+        '(
+          ("t" "Task" entry (file+headline org-default-notes-file "Tasks")
+           "* TODO %?\ncreated: %U\n\n%i\nRiferimenti:\n- %a" :empty-lines 1)
+          ("v" "Todo" entry (file+headline org-default-notes-file "Varie")
+           "* TODO %?\ncreated: %U\n\n%i\nRiferimenti:\n- %a" :empty-lines 1)
+          ("n" "Nota" entry (file+headline org-default-notes-file "Note")
+           "* %?\ncreated: %U\n\n%i\nRiferimenti:\n- %a" :empty-lines 1)
+          ("e" "Evento" entry (file+headline org-default-notes-file "Eventi")
+           "* %^{Cosa} %^{Quando}T\n%^{LOCATION}p\n%i\n%?\nRiferimenti:\n- %a" :empty-lines 1)
+          ("L" "Web bookmark" entry (file+headline org-default-notes-file "Captured Links")
+           "* %a\t:bookmark:%?\n:PROPERTIES:\n:CREATED: %U\n:END:\n\n%i\n" :empty-lines 1)
+          ("p" "Protocol" entry (file+headline org-default-notes-file "Captured Links")
+           "* %a\t:bookmark:%?\n:PROPERTIES:\n:CREATED: %U\n:END:\n\n%i\n" :empty-lines 1)
+	))
+
+  ;; see http://www.diegoberrocal.com/blog/2015/08/19/org-protocol/
+  ;; see https://github.com/sprig/org-capture-extension
+  (defadvice org-capture
+      (after make-full-window-frame activate)
+    "Advise capture to be the only window when used as a popup"
+    (if (equal "emacs-capture" (frame-parameter nil 'name))
+        (delete-other-windows)))
+
+  (defadvice org-capture-finalize
+      (after delete-capture-frame activate)
+    "Advise capture-finalize to close the frame"
+    (if (equal "emacs-capture" (frame-parameter nil 'name))
+        (delete-frame)))
+)
+#+end_src
+
+** PlantUML                                                             :env:
+[[https://plantuml.com/][PlantUML]] serve a generare diagrammi UML partendo da un formato
+testuale. Su Debian lo si può installare con:
+#+begin_src sh :eval no
+apt install plantuml
+#+end_src
+
+Lo utilizzo esclusivamente nei documenti Org, per cui lo configuro in
+questa sezione.
+#+begin_src emacs-lisp
+(use-package puml-mode
+  :ensure t
+  :mode "\\.\\(plantuml\\|puml\\)\\'"
+  :config
+  (add-to-list 'org-src-lang-modes '("plantuml" . puml))
+  (setq org-plantuml-jar-path (or (getenv "EMACS_PLANTUML_JAR") "/usr/share/plantuml/plantuml.jar"))
+)
+#+end_src
+
+Il /path/ al JAR di PlantUML è letto dalla variabile
+=EMACS_PLANTUML_JAR=; se non è assegnata si usa quello installato su
+Debian.
+
+** Ditaa                                                                :env:
+[[http://ditaa.sourceforge.net/][Ditaa]] converte diagrammi fatti in ASCII art in immagini. Non lo uso
+praticamente mai, ma mi piace averlo a disposizione. Su Debian lo si
+può installare con:
+#+begin_src sh :eval no
+apt install ditaa
+#+end_src
+
+Una volta installato basta dire a Org dove si trova:
+#+begin_src emacs-lisp
+(setq org-ditaa-jar-path (or (getenv "EMACS_DITAA_JAR") "/usr/share/ditaa/ditaa.jar"))
+#+end_src
+
+Il /path/ al JAR di Ditaa è letto dalla variabile =EMACS_DITAA_JAR=;
+se non è assegnata si usa quello installato su Debian.
+
+** Interleave
+[[https://github.com/rudolfochrist/interleave][Interleave]] è un interessante pacchetto che permette di prendere
+appunti in un file Org mentre si legge un PDF.
+
+Si possono prendere le note in due modi. Creando un file Org dedicato
+al singolo PDF e impostando l'opzione =INTERLEAVE_PDF= nell'/header/:
+#+begin_src org
+#+INTERLEAVE_PDF: /the/path/to/pdf.pdf
+#+end_src
+
+Oppure in una sezione di un Org file più ampio, assegnando una
+/property/:
+#+begin_src org
+,* Appunti sul libro "X"
+  :PROPERTIES:
+  :INTERLEAVE_PDF: libroX.pdf
+  :END:
+#+end_src
+In questo caso è necessario avviare l'=interleave-mode= con il
+/pointer/ sul titolo della sezione.
+
+Un riepilogo dei /binding/:
+| interleave mode          | =C-c i=       |
+| previous/next page       | =p= / =n=     |
+| insert note              | =i=           |
+| quit mode                | =q=           |
+| visit annotated page     | =M-.=         |
+| prev/next annotated page | =M-p= / =M-n= |
+
+#+begin_src emacs-lisp
+(use-package interleave
+  :ensure t
+  :bind (:map org-mode-map
+              ("C-c i" . 'interleave-mode)))
+#+end_src
+
+Un pacchetto simile è [[https://github.com/weirdNox/org-noter][Org-noter]], che un giorno potrei prendere in
+considerazione.
+
+** Orgalist
+[[http://elpa.gnu.org/packages/orgalist.html][Orgalist]] è un /minor mode/ per usare le liste di Org con altri /major
+mode/. Sostituisce Orgstruct, non più mantenuto.
+
+#+begin_src emacs-lisp
+(use-package orgalist
+  :ensure t)
+#+end_src
+
+
+* Sviluppo
+Ecco un riepilgo dei /binding/ usati nei modi di sviluppo:
+| function                       | binding           |
+|--------------------------------+-------------------|
+| indent region                  | =C-M-\=           |
+| indent expression              | =C-M-q=           |
+| duplicate line or region       | =C-c d=           |
+| duplicate and comment          | =C-c M-d=         |
+| move line or region up/down    | =M-up= / =M-down= |
+| put comment at the end of line | =M-;=             |
+| return and comment             | =M-j=             |
+|--------------------------------+-------------------|
+| jump to definition / back      | =M-.= / =M-*=     |
+| navigate symbol's occurences   | =M-p= / =M-n=     |
+| search symbol                  | =M-s _=           |
+| search symbol at point         | =M-s .=           |
+| occur symbol at point          | =M-s M-o=         |
+| multibuffer occur symbol       | =M-s M-.=         |
+| hightlight symbol              | =M-s h .=         |
+| un-highlight symbol            | =M-s h u=         |
+| navigate functions and vars    | =C-s-n=           |
+| toggle line numbering          | =C-c n=           |
+|--------------------------------+-------------------|
+| evaluate function              | =C-c C-x C-c=     |
+| start debugger                 | =F8=              |
+| debugging short-key mode       | =C-M-Ins=         |
+| compile                        | =F5=              |
+| re-compile                     | =F6=              |
+
+** TODO Funzionalità generali
+#+begin_comment
+Sarebbe opportuno un binding migliore per hide/show mode.
+#+end_comment
+Mi piace avere i comandi di compilazione e altri di uso frequente su
+dei tasti facilmente accessibili:
+#+begin_src emacs-lisp
+(global-set-key (kbd "<f5>") 'compile)
+(global-set-key (kbd "<f6>") 'recompile)
+#+end_src
+
+[[https://github.com/emacsfodder/move-text][MoveText]] permette di spostare velocemente la riga di testo o la
+regione corrente su e giù con =M-up= e =M-down=:
+#+begin_src emacs-lisp
+(use-package move-text
+  :ensure t
+  :config
+  (move-text-default-bindings))
+#+end_src
+La funzione =move-text-default-bindings= assegna semplicemente i due
+/binding/ di default.
+
+[[https://github.com/nschum/highlight-symbol.el][Highlight Symbol]] evidenzia il simbolo (funzioni, variabili, ecc.)
+sotto il /point/ e abilita la "navigazione" fra le occorrenze con
+=M-p= (/previous/) e =M-n= (/next/).
+#+begin_src emacs-lisp
+(use-package highlight-symbol
+  :ensure t
+  :config
+  (setq highlight-symbol-idle-delay 1.0)
+  :hook ((prog-mode . highlight-symbol-mode)
+         (prog-mode . highlight-symbol-nav-mode)))
+#+end_src
+
+[[https://github.com/bbatsov/crux][Crux]] contiene anche funzioni utili durante l'editing del codice:
+#+begin_src emacs-lisp
+(bind-keys :map prog-mode-map
+           ("C-c d" . crux-duplicate-current-line-or-region)
+           ("C-c M-d" . crux-duplicate-and-comment-current-line-or-region))
+#+end_src
+Al momento ne utilizzo un paio, utili nei flussi di "copia, incolla e
+modifica":
+- =crux-duplicate-current-line-or-region= duplica la linea o la
+  regione corrente
+- =crux-duplicate-and-comment-current-line-or-region= duplica la linea
+  o regione e la commenta
+
+Nei /buffer/ con il codice è comodo avere le righe numerate. In ogni
+caso si può attivare il /minor mode/ con =C-c n=.
+#+begin_src emacs-lisp
+(use-package linum-mode
+  :bind (("C-c n" . linum-mode))
+  :hook (prog-mode sgml-mode))
+#+end_src
+
+L'/hide show minor mode/ collassa ed espande blocchi di codice e
+commenti. È una funzione che hanno tutti gli IDE e Emacs non può
+essere da meno.
+#+begin_src emacs-lisp
+(use-package hs-minor-mode
+  :hook (prog-mode sgml-mode))
+#+end_src
+Il problema è il pessimo /binding/ di default sul /prefix/ =C-c @=,
+per esempio
+- =C-c @ C-c= collassa/espande il blocco corrente
+
+** Autocompletamento
+L'autocompletamento è indispensabile e io uso =company=:
+#+begin_src emacs-lisp
+(use-package company
+  :ensure t
+  :custom (company-show-numbers t)
+  :bind (("M-SPC" . company-complete))
+  :hook (after-init . global-company-mode))
+
+(use-package company-quickhelp
+  :ensure t
+  :config (company-quickhelp-mode))
+
+(use-package company-shell :ensure t)
+#+end_src
+L'autocompletamento si avvia con =M-SPC=. I candidati sono numerati,
+così se ne può scegliere velocemente uno con =M= (ALT) e il numero. Il
+/minor mode/ globale viene abilitato all'avvio.
+
+Un paio di pacchetti aggiungono delle estensioni
+utili. =company-quickhelp= mostra un pop-up con la documentazione
+quando ci si sofferma su un candidato. =company-shell= fornisce
+beckend di completamento con i binary nel =$PATH= e le variabili di
+ambiente.
+
+** TODO Navigazione
+#+begin_comment
+Non sono sicuro che l'advice su dumb-jump-go serva davvero.
+#+end_comment
+[[https://github.com/jacktasia/dumb-jump][Dumb jump]] permette di navigare fra le definizioni effettuando una
+semplice ricerca testuale sulla /code base/, risultato così semplice e
+leggero, senza richiedere la costruzione di indici (TAGS) o processi
+ijn /background/. Pur con tutti i suoi limiti è abbastanza veloce ed efficace.
+#+begin_src emacs-lisp
+(use-package dumb-jump
+  :ensure t
+  :after ivy
+  :config
+  (advice-add 'dumb-jump-go :before #'push-mark) ;; push mark before jump
+  (setq dumb-jump-selector 'ivy) ;; use ivy
+  :bind (:map dumb-jump-mode-map
+              ("M-." . dumb-jump-go)
+              ("M-*" . dumb-jump-back))
+  :hook ((sh-mode c-mode c++-mode latex-mode) . dumb-jump-mode))
+#+end_src
+Alcuni /major mode/ hanno il loro sistema di navigazione, quindi l'ho
+associato solo ad alcuni linguaggi.
+
+** Syntax checking
+Così come l'[[*Autocompletamento][autocompletamento]], anche il /syntax checking/ è un
+elemento indispensabile per lo sviluppo di qualunque software e
+[[https://www.flycheck.org/][Flycheck]] è lo standard per Emacs.
+#+begin_src emacs-lisp
+(use-package flycheck
+  :ensure t
+  :hook ((prog-mode sgml-mode) . flycheck-mode))
+#+end_src
+Qui lo abilito su tutti i /mode/ per la programmazione e il /web
+development/.
+
+** Outshine
+[[https://github.com/alphapapa/outshine][Outshine]] è un /minor mode/ che riproduce le strutture di Org. Lo trovo
+utile insieme ad alcuni /major mode/ come Restclient per organizzare i
+file in sezioni. Nei commenti si possono inserire gli /header/ di Org
+e alternare la visibilità col consueto =TAB=.
+
+#+begin_src emacs-lisp
+(use-package outshine
+  :ensure t
+  :init (defvar outline-minor-mode-prefix (kbd "C-#"))
+  :config
+  (setq outshine-use-speed-commands t))
+#+end_src
+La variabile =outline-minor-mode-prefix= definisce il prefisso dei
+/binding/ e va assegnata *prima* di caricare il modulo. La variabile
+=outshine-use-speed-commands= attiva gli /speed command/, dei quali si
+può vedere un riepilogo invocando =outshine-speed-command-help=.
+
+** TODO Debugging
+#+begin_comment
+Uso poco il debugger, dare qualche spiegazione. Magari iniziare anche
+a usarlo!
+#+end_comment
+#+begin_src emacs-lisp
+(use-package realgud
+  :ensure t
+  :config
+  (setq realgud-safe-mode nil))
+#+end_src
+
+** TODO Logging
+#+begin_comment
+Tabella con i /binding/ fondamentali. Il formato custom di CVCert
+vorrei toglierlo, ma tenerlo per reference nella sez. Archivio.
+#+end_comment
+Visualizzare, muoversi e fare ricerche nei file di log è fondamentale
+e [[https://github.com/doublep/logview][Logiview]] fornisce tutto questo e oltre. È in grado di interpretare
+di /default/ i formati più comuni (SLF4J per Java, Apache, PHP e
+alcuni =/var/log=), ma se ne possono aggiungere di personalizzati.
+
+#+begin_src emacs-lisp
+(use-package logview
+  :ensure t
+  :config
+  (setq logview-additional-submodes
+        '(
+          ;; custom log format Python
+          ("Python custom"
+           (format . "LEVEL - NAME:")
+           (levels . "Python")
+           (timestamp)
+           (aliases))
+          ;; CVCert format
+          ("cvcert"
+           (format . "cvcert TIMESTAMP LEVEL [NAME] (THREAD)")
+           (levels . "SLF4J")
+           (timestamp)
+           (aliases)))))
+#+end_src
+
+** TODO Versioning
+#+begin_comment
+La configurazione di org-link-minor-mode e orgalist va inserita nel contesto di
+configurazione di Magit & C.
+#+end_comment
+#+begin_src emacs-lisp
+(use-package org-link-minor-mode
+  :hook (log-view-mode log-edit-mode git-commit-setup))
+
+;; enable orgalist in VC and Magit
+(add-hook 'log-edit-mode-hook 'orgalist-mode)
+(add-hook 'git-commit-setup-hook 'orgalist-mode)
+#+end_src
+
+** TODO Evidenza dei TODO/FIXME
+#+begin_comment
+Ci sono dei package come [[https://github.com/vincekd/comment-tags][comment-tags]] o [[https://github.com/tarsius/hl-todo][hl-todo]] che lo fanno
+sicuramente meglio.
+#+end_comment
+Gli IDE evidenziano le righe di codice commentate con parole chiave
+tipo =TODO= e =FIXME=. Ho arrangiato qualcosa io con
+=highlight-lines-matching-regexp=.
+#+begin_src emacs-lisp
+(defface highlight-comments-todo
+  '((t (:foreground "#A8C023" :weight bold :inherit (font-lock-comment-face))))
+  "Face for TODO in comments."
+  )
+
+(defface highlight-comments-fixme
+  '((t (:foreground "#A8C023" :weight bold :inherit (font-lock-comment-face))))
+  "Face for FIXME in comments."
+  )
+
+(defun lc/highlight-keywords-in-comments()
+  "Highlights TODO, FIXME, XXX keywords in comments."
+  (highlight-lines-matching-regexp
+   (concat comment-start-skip (regexp-opt '("TODO") 'words)) 'highlight-comments-todo)
+  (highlight-lines-matching-regexp
+   (concat comment-start-skip (regexp-opt '("FIXME" "XXX") 'words)) 'highlight-comments-fixme))
+
+(add-hook 'prog-mode-hook 'lc/highlight-keywords-in-comments)
+#+end_src
+
+** Lorem ipsum
+Un bel generatore di /Lorem Ipsum/ è indispensabile, non solo nello
+sviluppo web!
+#+begin_src emacs-lisp
+(use-package lorem-ipsum
+  :ensure t
+  :bind (("C-c C-l" . lorem-ipsum-insert-paragraphs)))
+#+end_src
+
+** TODO Python
+[[https://github.com/jorgenschaefer/elpy][Elpy]] è un /major mode/ per Python molto completo.
+#+begin_src emacs-lisp
+(use-package elpy
+  :ensure t
+  :custom
+  (python-shell-interpreter "ipython")
+  (python-shell-interpreter-args "--simple-prompt -i")
+  :config
+  (elpy-enable)
+  ;; use flycheck not flymake with elpy
+  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  (add-hook 'elpy-mode-hook 'flycheck-mode))
+
+(use-package company-jedi :ensure t)
+#+end_src
+
+Questa configurazione invece esegue la formattazione del codice
+secondo gli standard quando si salva un /buffer/.
+#+begin_src emacs-lisp
+(use-package py-autopep8
+  :ensure t
+  :hook (elpy-mode . py-autopep8-enable-on-save))
+#+end_src
+
+#+begin_comment
+Questi binding non sono sicuro che servano. Sono attivati in
+python-mode, ma ho configurato elpy.
+#+end_comment
+#+begin_src emacs-lisp
+(add-hook 'python-mode-hook
+	  (lambda ()
+	  (define-key python-mode-map (kbd "C-c C-x C-c") 'python-shell-send-defun)
+	  (define-key python-mode-map (kbd "<f8>") 'realgud:pdb)
+	  (define-key python-mode-map (kbd "C-M-<insert>") 'realgud-short-key-mode)
+	  ))
+#+end_src
+
+** TODO JavaScript                                                      :env:
+Emacs è un grande ambiente per sviluppare in JavaScript. Come /syntax
+checker/ utilizzo [[https://eslint.org/][ESLint]], che va installato preventivamente, per
+esempio con =npm=:
+#+begin_src sh :eval no
+npm i -g eslint
+#+end_src
+
+Così posso impostare il /path/ all'eseguibile di ESLint. Il /path/
+specifico è letto dalla variabile =EMACS_ESLINT_PATH=.
+#+begin_src emacs-lisp
+(use-package js
+  :after flycheck
+  :init (setq flycheck-javascript-eslint-executable (getenv "EMACS_ESLINT_PATH")))
+#+end_src
+
+=eslint-fix= fa in modo che al salvataggio del file vengano possibilmente applicati
+i /fix/ suggeriti da ESLint.
+#+begin_src emacs-lisp
+(use-package eslint-fix
+  :ensure t
+  :after js
+  :config
+  (add-hook 'js-mode-hook (lambda () (add-hook 'after-save-hook 'eslint-fix nil t)))
+  (add-hook 'vue-mode-hook (lambda () (add-hook 'after-save-hook 'eslint-fix nil t)))
+  )
+#+end_src
+
+#+begin_comment
+Ho fatto solo il binding per inserire i tag, ma potrei sfruttarlo di
+più. Un'idea potrebbe essere di creare un'espansione di =/**= per
+richiamare la funzione che inserisce la documentazione. 
+#+end_comment
+Il pacchetto [[https://github.com/mooz/js-doc][js-doc]] aiuta a documentare il codice. Lo uso per
+inserire i tag JSDoc.
+#+begin_src emacs-lisp
+(use-package js-doc
+  :ensure t
+  :bind (:map js-mode-map
+              ("@" . js-doc-insert-tag)))
+#+end_src
+
+[[https://ternjs.net/][Tern]] è un motore di analisi del codice JavsScript, che tra le altre
+cose fornisce il l'autocompletamento, suggerisce gli argomenti delle
+funzioni, il refactoring, ecc.
+#+begin_src emacs-lisp
+(use-package tern
+  :ensure t
+  :after js
+  :hook ((js-mode vue-mode) . tern-mode)
+  :bind (:map js-mode-map
+              ("M-." . tern-find-definition)
+              ("M-*" . tern-pop-find-definition)))
+
+(use-package company-tern
+  :ensure t
+  :after (company tern)
+  :config
+  (push 'company-tern company-backends))
+#+end_src
+
+Sviluppando componenti di Vue.js è comodo il supporto a Flycheck, in
+quanto nello stesso file si trovano HTML, JavaScript e CSS.
+#+begin_src emacs-lisp
+(use-package vue-mode
+  :ensure t
+  :after flycheck
+  :config
+  (flycheck-add-mode 'javascript-eslint 'vue-mode)
+  (flycheck-add-mode 'javascript-eslint 'vue-html-mode)
+  (flycheck-add-mode 'javascript-eslint 'css-mode)
+  :bind
+  (("C-M-f" . eslint-fix)))
+#+end_src
+Inoltre in quel /mode/ posso invocare manualmente =eslint-fix= con
+=C-M-f=.
+
+Spesso i framework basati su Vue utilizzano Stylus CSS:
+#+begin_src emacs-lisp
+(use-package jade-mode :ensure t)
+
+(use-package sws-mode
+  :ensure t
+  :after jade-mode
+  :config
+  (add-to-list 'auto-mode-alist '("\\.styl\\'" . sws-mode)))
+#+end_src
+
+#+begin_comment
+Non funziona bene né la REPL di Node né le funzioni di js-doc. Emacs
+si pianta.
+#+end_comment
+Infine il supporto per l'utilizzo interattivo di Node e l'integrazione
+con =js-mode=:
+#+begin_src emacs-lisp
+(use-package nodejs-repl
+  :ensure t
+  :after js
+  :config (setq nodejs-repl-command "node")
+  :bind (:map js-mode-map
+              ("C-x n e" . nodejs-repl-send-last-sexp)
+              ("C-x n r" . nodejs-repl-send-region)
+              ("C-x n b" . nodejs-repl-send-buffer)
+              ("C-x n f" . nodejs-repl-load-file)
+              ("C-x n z" . nodejs-repl-switch-to-repl)))
+#+end_src
+
+** TODO Web development
+#+begin_comment
+Dovrei davvero valutare l'adozione di web-mode.
+#+end_comment
+=sgml-mode= è il /major mode/ da cui derivano un po' tutti i /mode/
+per i linguaggi di marcatura. Quindi ho fatto il /binding/ di alcune
+funzioni utili a navigare fra i /tag/.
+#+begin_src emacs-lisp
+(use-package sgml-mode
+  ;; rebind tags navigation keys
+  :bind (:map sgml-mode-map
+              ("<M-left>" . sgml-skip-tag-backward)
+              ("<M-right>" . sgml-skip-tag-forward)
+              ("M-h" . er/mark-inner-tag)
+              ("<backtab>" . sgml-pretty-print)))
+#+end_src
+
+#+begin_comment
+C'è qualcosa di meglio rispetto a dover installare manualmente
+hl-tags-mode? Forse web-mode ha già questa funzione.
+#+end_comment
+=hl-tags-mode= evidenzia i /tags/ corrispondenti. La libreria va
+scaricata da [[https://github.com/deactivated/hl-tags-mode][qui]] e installata sotto =~/.emacs.d/elisp/=, dopodiché
+la si può importare:
+#+begin_src emacs-lisp
+(use-package hl-tags-mode
+  :hook sgml-mode)
+#+end_src
+
+[[https://www.emmet.io/][Emmet]] è un /toolkit/ per velocizzare la scrittura di codice HTML e
+CSS, e naturalmente è supportato da Emacs:
+#+begin_src emacs-lisp
+(use-package emmet-mode
+  :ensure t
+  :hook (sgml-mode css-mode))
+#+end_src
+Il /binding/ di /default/ per espandere gli /shortcut/ di Emmet è
+=C-j=.
+
+Infine un po' di autocompletamento per HTML, Bootstrap, ecc.
+#+begin_src emacs-lisp
+(use-package ac-html :ensure t)
+
+(use-package company-web
+  :ensure t
+  :after (company ac-html))
+
+(use-package company-web-html
+  :after (sgml-mode company-web)
+  :bind (:map html-mode-map
+              ("M-SPC" . company-web-html)))
+
+(use-package ac-html-bootstrap
+  :ensure t
+  :after company-web
+  :config
+  (add-hook 'html-mode-hook
+            (lambda()
+              (company-web-bootstrap+)
+              (company-web-fa+))))
+#+end_src
+
+** Restclient
+[[https://github.com/pashky/restclient.el][Restclient]] è uno strumento fantastico per invocare /webservice/ da
+Emacs. Un semplice file di testo diventa sia il /client/ che la
+documentazione dei servizi stessi. Per esempio:
+#+begin_src restclient :eval no
+# -*- mode: restclient -*-
+
+# * Utente
+# ** App Properties
+# Consultazione delle informazioni sull'applicazione. Può essere
+# invocato senza autenticazione.
+GET :api/info
+
+# ** Info utente
+# Informazioni sull'utente corrente.
+GET :api/utente
+X-Auth: :token
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package restclient
+  :ensure t
+  :config
+  (remove-hook 'restclient-mode-hook 'restclient-outline-mode)
+  :hook
+  (restclient-mode . outshine-mode))
+
+(use-package company-restclient :ensure t)
+#+end_src
+
+/Restclient/ ha un suo /outline mode/, ma io preferisco
+[[*Outshine][Outshine]]. Inoltre abilito il /backend/ per l'autocompletamento di
+metodi e /header/ HTTP.
+
+
+* Templating
+
+** TODO Yasnippet                                                       :env:
+#+begin_comment
+Ci vorrebbe un /binding/ sensato per l'espansione di una region e un
+bel riepilgo degli snippet disponibili per ogni mode, perché c'è il
+rischio di non usarli mai perché non mi ricordo quali sono.
+#+end_comment
+
+[[https://github.com/joaotavora/yasnippet][Yasnippet]] è /il/ sistema di template per Emacs. La directory degli
+snippet è letta dalla variabile =EMACS_YAS_TEMPLATES=, altrimenti il
+default è =~/.yasnippets=.
+#+begin_src emacs-lisp
+;; yasnippet config
+(use-package yasnippet
+  :ensure t
+  :config
+  (add-to-list 'yas-snippet-dirs (or (getenv "EMACS_YAS_TEMPLATES") "~/.yasnippets"))
+  (yas-global-mode 1)
+  :custom (yas-wrap-around-region t)
+  :bind
+  (:map yas-minor-mode-map
+        ("C-c y C-s" . yas-insert-snippet)
+        ("C-c y <tab>" . yas-insert-snippet)
+        ("C-c y C-n" . yas-new-snippet)
+        ("C-c y C-v" . yas-visit-snippet-file)
+        ("C-c &" . nil)
+        ;; remap expand to C-TAB (otherwise conflicts with Org easy templates)
+        ("C-<tab>". yas-expand)
+        ("<tab>" . nil)
+        ("TAB" . nil)
+        ))
+
+(use-package autoinsert
+  :commands (auto-insert-mode define-auto-insert)
+  :preface
+  (defun lc/autoinsert-yas-expand()
+    "Replace text in yasnippet template."
+    (interactive)
+    (yas-expand-snippet (buffer-string) (point-min) (point-max)))
+  :config
+  (setq auto-insert-query nil)
+  (define-auto-insert '(org-mode . "Org standard headers") ["org-template.org" lc/autoinsert-yas-expand])
+  (define-auto-insert "\\.html$" ["html5-template.html" lc/autoinsert-yas-expand])
+  (define-auto-insert "\\.vue$" ["vue-component-template.vue" lc/autoinsert-yas-expand])
+  (auto-insert-mode 1)
+  :hook (find-file . auto-insert))
+#+end_src
+
+Uso Yasnippet in combinazione con =autoinsert=, per popolare con dei
+template i file di nuova creazione. Quando si crea un nuovo file fra
+quelli definiti con =define-auto-insert=, questo viene popolato dal
+template indicato. Poiché questi template hanno la sintassi degli
+snippet, dopo che =autoinsert= li ha copiati viene invocata la
+funzione =lc/autoinsert-yas-expand=, la quale non fa altro che
+espanderli. I template si trovano in =~/insert=, che è la locazione di
+/default/, la quale può essere personalizzata impostando la variabile
+=auto-insert-directory=.
+
+#+begin_comment
+Potrei mettere i template nel progetto degli snippets e linkare la
+directory come =~/insert=.
+#+end_comment
+
+
+* Email
+Gestire le mail con Emacs abilita tutta una serie di workflow
+potentissimi. Ci sono tanti client di posta per Emacs, io ho scelto
+/Not Much/ per la capacità di indicizzazione e la semplicità
+dell'interfaccia.
+#+begin_src emacs-lisp
+(use-package notmuch
+  :ensure t
+  :config
+  (setq notmuch-search-oldest-first nil
+        notmuch-fcc-dirs "local-sent +sent -inbox -new -unread"))
+#+end_src
+Con questa configurazione i risultati delle ricerche sono ordinati per
+data, a partire dalle mail più recenti. Inoltre le mail inviate sono
+salvate nella cartella =local-sent= e /taggate/ opportunamente.
+
+Le seguenti variabili attengono all'invio delle mail:
+#+begin_src emacs-lisp
+(setq send-mail-function 'sendmail-send-it
+      message-kill-buffer-on-exit t
+      mail-specify-envelope-from t
+      mail-envelope-from 'header)
+#+end_src
+Impostando così =send-mail-function= si utilizza il MTA locale
+installato sulla macchina. A beneficio dell'MTA viene impostato
+l'/header/ =from=, così per esempio si può decidere il server SMTP in
+base all'indirizzo del mittente.
+
+Nell'/editing/ delle mail sono comode le funzioni per le liste di Org.
+#+begin_src emacs-lisp
+(add-hook 'message-mode-hook 'orgalist-mode)
+#+end_src
+
+Il pacchetto =ol-notmuch= abilita i link alle e-mail nei file
+Org. Questa funzionalità è *fondamentale*:
+#+begin_src emacs-lisp
+(use-package ol-notmuch
+  :after (org notmuch))
+#+end_src
+
+Infine con [[https://github.com/org-mime/org-mime][org-mime]] si possono mandare e-mail HTML a partire dai
+/buffer/ Org. Questo è utile soprattutto quando di devono includere
+nelle mail frammenti di codice o liste, TODO, ecc. La formattazione
+HTML e la sintassi evidenziata rendono la mail molto più leggibile.
+#+begin_src emacs-lisp
+(use-package org-mime
+  :ensure t
+  :after (org)
+  :bind (:map message-mode-map
+              ("C-c M-o" . org-mime-htmlize)
+         :map org-mode-map
+              ("C-c M-o" . org-mime-org-subtree-htmlize)
+              ))
+#+end_src
+
+* PDF Tools
+[[https://github.com/politza/pdf-tools][PDF Tools]] è un /reader/ di file PDF, con molte funzionalità, che va a
+sostituire il /DocView/ standard di Emacs.
+#+begin_src emacs-lisp
+(use-package pdf-tools
+  :init
+  ;; initial setup of PDF Tools if necessary
+  (pdf-tools-install)
+  :bind (:map pdf-view-mode-map
+              ("C-s" . isearch-forward)))
+#+end_src
+
+* TODO Verso l'esterno
+#+begin_src emacs-lisp
+;; default browser
+(setq browse-url-browser-function 'browse-url-chromium)
+#+end_src
+
+* TODO Emacs server 
+#+begin_src emacs-lisp
+;; manage server pidfile
+(setq pidfile (concat (getenv "XDG_RUNTIME_DIR") "/emacs-server.pid"))
+(add-hook 'emacs-startup-hook
+	  (lambda () 
+	    (with-temp-file pidfile
+	      (insert (number-to-string (emacs-pid))))))
+(add-hook 'kill-emacs-hook 
+	  (lambda () 
+	    (when (file-exists-p pidfile) 
+	      (delete-file pidfile))))
+#+end_src
+
+* TODO Estetica
+L'estetica è molto importante e non va affatto sottovalutata. Anche se
+Emacs è molto potente il suo aspetto predefinito non è molto
+accattivante. Invece lavorare con una bella interfaccia, pulita e
+funzionale, rende tutto più piacevole e divertente.
+
+Di solito tengo le impostazioni estetiche alla fine della
+configurazione. In questo modo, se ci sono errori, me ne accorgo
+subito perché Emacs non appare esteticamente come dovrebbe.
+
+Per iniziare qualche piccolo fix estetico preso da [[https://github.com/technomancy/better-defaults/blob/master/better-defaults.el][Better Defaults]] e
+altre fonti. Niente toolbar, scrollbar e /splash screen/ iniziale.
+#+BEGIN_SRC emacs-lisp
+(when (fboundp 'tool-bar-mode)
+  (tool-bar-mode -1))
+(when (fboundp 'scroll-bar-mode)
+  (scroll-bar-mode -1))
+(when (fboundp 'horizontal-scroll-bar-mode)
+  (horizontal-scroll-bar-mode -1))
+
+;; inhibit splash screen
+(setq inhibit-startup-screen t)
+#+END_SRC
+
+Qui imposto la dimensione dei caratteri e l'effetto di trasparenza:
+#+begin_src emacs-lisp
+;; font size (il default originale era 113)
+(set-face-attribute 'default nil :height 98)
+
+;; frame transparency
+(set-frame-parameter (selected-frame) 'alpha '(92 . 90))
+(add-to-list 'default-frame-alist '(alpha . (92 . 90)))
+#+end_src
+
+Infine imposto il tema. C'è vasta diponibilità, ma a me piace il
+[[https://github.com/kuanyui/moe-theme.el][moe-theme]] scuro.
+#+begin_src emacs-lisp
+(use-package moe-theme
+  :ensure t
+  :init (require 'powerline)
+  :config
+  (setq show-paren-style 'mixed)
+  ;; powerline and moe-theme styles
+  (moe-theme-set-color 'cyan)
+  (moe-dark)
+  ;; activate powerline moe theme
+  (powerline-moe-theme))
+#+end_src
+
+
+* Archivio
+Metto qui un po' di vecchie configurazioni che non uso più, ma che
+voglio mantenere per riferimento.
+
+** org-pdfview
+org-pdfview è un pacchetto ormai obsoleto che aggiungeva il supporto
+ai link Org nei file PDF. Ora è superato da [[https://github.com/fuxialexander/org-pdftools][org-pdftools]]. Al momento
+non ne faccio uso, ma potrebbe servirmi in futuro.
+
+La vecchia configurazione era questa:
+#+begin_src elisp
+(use-package org-pdftools
+  :ensure t
+  :hook (org-load . org-pdftools-setup-link))
+#+end_src
+
+** Solidity                                                             :env:
+Ho utilizzato il linguaggio /Solidity/ per sperimentare lo sviluppo di
+DApp per la /blockchain/ di Ethereum. Al momento non ne faccio più
+uso, ma potrebbe ritornare utile in futuro. Nel caso bisogna assegnare
+alla variabile =EMACS_SOLIDITY_PATH= il /path/ assoluto all'eseguibile
+di /Solidity/.
+#+begin_src elisp
+(use-package solidity-mode
+  :ensure t
+  :config
+  (setq solidity-solc-path (getenv "EMACS_SOLIDITY_PATH"))
+  )
+
+(use-package company-solidity
+  :ensure t
+  :after company)
+
+(use-package flymake-solidity
+  :ensure t
+  :after solidity-mode
+  :config
+  (setq flymake-solidity-executable (getenv "EMACS_SOLIDITY_PATH"))
+  :hook (find-file . flymake-solidity-maybe-load))
+#+end_src
+
+** Tema "Misterioso"
+Prima di adottare il =moe-theme= ho usato il tema "Misterioso", che è
+fra quelli già inclusi con Emacs. Tengo comunque qui per riferimento
+la funzione che lo abilita.
+#+begin_src elisp
+(defun lc/misterioso-theme ()
+  "Abilita il tema 'misterioso' e le relative personalizzazioni."
+
+  ;; color theme (misterioso)
+  (setq custom-enabled-themes '(deeper-blue misterioso))
+  (load-theme 'misterioso t)
+
+  ;; face for hl-line-mode (not necessary for moe-theme)
+  (set-face-attribute hl-line-face nil :background "#212931") ;; per il tema "misterioso"
+  (set-face-background 'highlight "#212931") ;; fix highlight face per il tema "misterioso"
+
+  ;; org-mode babel source block theming (for "misterioso" theme)
+  (defface org-block-begin-line
+    '((t (:foreground "#006bbf" :background "#002e42")))
+    "Face used for the line delimiting the begin of source blocks.")
+
+  (defface org-block-background
+    '((t (:background "#111111")))
+    "Face used for the source block background.")
+
+  (defface org-block-end-line
+    '((t (:foreground "#006bbf" :background "#002e42")))
+    "Face used for the line delimiting the end of source blocks."))
+#+end_src
+
+
+* Service
+Per provare la configurazione su una nuova istanza di Emacs:
+#+begin_src sh :eval no
+emacs -q --eval '(org-babel-load-file "~/dev/dotemacs/config.org")'
+#+end_src
