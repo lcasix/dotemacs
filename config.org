@@ -274,6 +274,41 @@ generale, nonché alcune versioni migliorate di quelle standard.
    ("C-x 4 t" . crux-transpose-windows)))
 #+END_SRC
 
+Ho scritto una semplice funzione per inserire uno spazio /dopo/ il
+cursore e l'assegno a =C-M-SPC=.
+#+begin_src emacs-lisp
+(defun lc/insert-space-after-point (&optional times)
+  "Insert a space after point."
+  (interactive "p")
+  (save-excursion (dotimes (i (or times 1)) (insert " "))))
+(global-set-key (kbd "C-M-SPC") 'lc/insert-space-after-point)
+#+end_src
+
+Un'altra funzione estende l'eliminazione delle linee vuote. Senza
+prefissi si comporta come =delete-blank-lines=. Con un prefisso
+cancella le linee vuote /sopra/ quella corrente. Con due prefissi
+cancella le linee vuote sia /sopra/ che /sotto/.
+#+begin_src emacs-lisp
+(defun lc/delete-blank-lines-above (prefix)
+  "Delete all surrounding blank lines, leaving just one,
+above current line. With no prefix behaves just like
+`delete-blank-lines'. With one prefix delete blank lines above
+current. With two prefixes delete line above and beyond current."
+  (interactive "*P")
+  (cond
+   ((not prefix) (delete-blank-lines))
+   ((equal prefix '(4))
+    (save-excursion
+      (previous-line)
+      (delete-blank-lines)))
+   ((equal prefix '(16))
+    (save-excursion
+      (previous-line)
+      (delete-blank-lines))
+    (delete-blank-lines))))
+(global-set-key [remap delete-blank-lines] 'lc/delete-blank-lines-above)
+#+end_src
+
 Il pacchetto [[https://github.com/benma/visual-regexp.el][visual-regexp]] fornisce una versione molto visuale della
 funzionalità il "search & replace":
 #+begin_src emacs-lisp
@@ -330,6 +365,8 @@ Principali funzioni per il taglio del testo:
 |--------------------------------+-------------|
 | append region to buffer        | =C-x a b=   |
 | append region to file          | =C-x a f=   |
+|--------------------------------+-------------|
+| copy file path to kill ring    | =C-c M-w=   |
 
 /Avy zap/ taglia usando il puntamento basato sui caratteri (vedi
 [[https://github.com/cute-jumper/avy-zap][repository]] GitHub):
@@ -347,6 +384,19 @@ immediato di una /region/ in un buffer, risparmiando la fase di
 ;; append to file/buffer
 (global-set-key (kbd "C-x a b") 'append-to-buffer)
 (global-set-key (kbd "C-x a f") 'append-to-file)
+#+end_src
+
+Questa piccola funzione copia nel /kill ring/ il path completo al file
+del /buffer/ corrente. Non è tutta farina del mio sacco, ma ho preso
+ispirazione da [[https://stackoverflow.com/a/3669629][qui]].
+#+begin_src emacs-lisp
+(defun lc/kill-file-path ()
+  "Copy current buffer's full path to kill ring."
+  (interactive)
+  (let ((filename (when buffer-file-name (file-truename buffer-file-name))))
+    (if filename (kill-new filename))
+    (message "%s" filename)))
+(global-set-key (kbd "C-c M-w") 'lc/kill-file-path)
 #+end_src
 
 ** Navigazione
