@@ -1835,14 +1835,14 @@ default è =~/.yasnippets=.
 #+end_src
 
 Uso Yasnippet in combinazione con =autoinsert=, per popolare con dei
-template i file di nuova creazione. Quando si crea un nuovo file fra
-quelli definiti con =define-auto-insert=, questo viene popolato dal
-template indicato. Poiché questi template hanno la sintassi degli
-snippet, dopo che =autoinsert= li ha copiati viene invocata la
-funzione =lc/autoinsert-yas-expand=, la quale non fa altro che
-espanderli. I template si trovano in =~/insert=, che è la locazione di
-/default/, la quale può essere personalizzata impostando la variabile
-=auto-insert-directory=.
+template i file di nuova creazione (vedi [[http://howardism.org/Technical/Emacs/templates-tutorial.html][qui]]). Quando si crea un nuovo
+file fra quelli definiti con =define-auto-insert=, questo viene
+popolato dal template indicato. Poiché questi template hanno la
+sintassi degli snippet, dopo che =autoinsert= li ha copiati viene
+invocata la funzione =lc/autoinsert-yas-expand=, la quale non fa altro
+che espanderli. I template si trovano in =~/insert=, che è la
+locazione di /default/, la quale può essere personalizzata impostando
+la variabile =auto-insert-directory=.
 
 #+begin_comment
 Potrei mettere i template nel progetto degli snippets e linkare la
