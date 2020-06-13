@@ -1339,18 +1339,28 @@ sotto il /point/ e abilita la "navigazione" fra le occorrenze con
          (prog-mode . highlight-symbol-nav-mode)))
 #+end_src
 
-[[https://github.com/bbatsov/crux][Crux]] contiene anche funzioni utili durante l'editing del codice:
+Alcuni binding utili durante l'editing del codice:
 #+begin_src emacs-lisp
 (bind-keys :map prog-mode-map
+           ([remap newline] . newline-and-indent)
            ("C-c d" . crux-duplicate-current-line-or-region)
            ("C-c M-d" . crux-duplicate-and-comment-current-line-or-region))
 #+end_src
-Al momento ne utilizzo un paio, utili nei flussi di "copia, incolla e
-modifica":
+Sono utili nei flussi di "copia, incolla e modifica":
 - =crux-duplicate-current-line-or-region= duplica la linea o la
   regione corrente
 - =crux-duplicate-and-comment-current-line-or-region= duplica la linea
   o regione e la commenta
+Inoltre quando si programma è comodo chiamare =newline-and-indent=
+quando si va a capo.
+
+[[https://github.com/bbatsov/crux][Crux]] definisce degli utilissimi "decoratori" che estendono le
+funzionalità dei comandi.
+#+begin_src emacs-lisp
+(crux-with-region-or-line comment-or-uncomment-region)
+#+end_src
+- =comment-or-uncomment-region= viene esteso per funzionare sulla riga
+  corrente se non è selezionata una regione
 
 Nei /buffer/ con il codice è comodo avere le righe numerate. In ogni
 caso si può attivare il /minor mode/ con =C-c n=.
