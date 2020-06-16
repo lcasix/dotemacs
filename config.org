@@ -829,8 +829,18 @@ base.
           ("PENDING" . (:foreground "dim grey" :weight bold))
           ))
 
-  ;; default capture file
-  (setq org-default-notes-file (or (getenv "EMACS_COMMONPLACE") "~/commonplace.org"))
+  ;; apps for opening attachments
+  (setq org-file-apps (quote ((auto-mode . emacs)
+                              ("\\.jpe?g\\'" . system)
+                              ("\\.png\\'" . system)
+                              ("\\.x?html?\\'" . system)
+                              ("\\.pdf\\'" . system)
+                              ("\\.docx?\\'" . system)
+                              ("\\.odt\\|\\.ods\\'" . system)
+                              ;; setsid è un workaround per far funzionare xdg-open
+                              ;; vedi https://askubuntu.com/a/675366
+                              (system . "setsid -w xdg-open \"%s\"")
+                              )))
 
   ;; Support link/copy/paste from eww to Org-mode
   (require 'org-eww)
@@ -1171,6 +1181,9 @@ che vengono registrati. Si vedano i link:
           ("p" "Protocol" entry (file+headline org-default-notes-file "Captured Links")
            "* %a\t:bookmark:%?\n:PROPERTIES:\n:CREATED: %U\n:END:\n\n%i\n" :empty-lines 1)
 	))
+
+  ;; default capture file
+  (setq org-default-notes-file (or (getenv "EMACS_COMMONPLACE") "~/commonplace.org"))
 
   ;; see http://www.diegoberrocal.com/blog/2015/08/19/org-protocol/
   ;; see https://github.com/sprig/org-capture-extension
