@@ -1872,6 +1872,48 @@ Potrei mettere i template nel progetto degli snippets e linkare la
 directory come =~/insert=.
 #+end_comment
 
+** Abbreviazioni
+Qui definisco alcune [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Abbrevs.html][abbrevs]] per inserire rapidamente cose come il
+nome, l'email, brevi frasi e piccoli /template/.
+#+begin_src emacs-lisp
+;; templates
+(define-skeleton lc/activity-log
+  "Template descrizione attività generica. L'uso è orientato
+soprattutto ai log di commit."
+  nil
+
+  "attività del " (insert-date nil)
+  )
+
+(define-skeleton lc/reference-list
+  "Template per generare una lista di riferimenti."
+  nil
+
+  "Riferimenti:" \n
+  "- " _ \n
+  )
+
+;; common abbrevs
+(define-abbrev-table 'global-abbrev-table '(
+    
+    ;; me
+    ("8me" "" (lambda () (insert user-full-name)))
+    ("8mail" "" (lambda () (insert user-mail-address)))
+
+    ;; work
+    ("8log" "" lc/activity-log)
+
+    ;; misc
+    ("4lorem" "" (lambda () (lorem-ipsum-insert-sentences)))
+    ("8lorem" "" (lambda () (lorem-ipsum-insert-paragraphs)))
+    ))
+
+;; org mode
+(define-abbrev-table 'org-mode-abbrev-table
+  '(("8ref" "" lc/reference-list)
+    ))
+#+end_src
+
 
 * Email
 Gestire le mail con Emacs abilita tutta una serie di workflow
