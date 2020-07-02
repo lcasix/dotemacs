@@ -284,6 +284,11 @@ cursore e l'assegno a =C-M-SPC=.
 (global-set-key (kbd "C-M-SPC") 'lc/insert-space-after-point)
 #+end_src
 
+#+begin_quote
+Metti una distanza dopo una chiusura, ma custodiscine l'esperienza per
+proseguire il viaggio. (B.M.)
+#+end_quote
+
 Un'altra funzione estende l'eliminazione delle linee vuote. Senza
 prefissi si comporta come =delete-blank-lines=. Con un prefisso
 cancella le linee vuote /sopra/ quella corrente. Con due prefissi
