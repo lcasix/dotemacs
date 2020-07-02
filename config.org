@@ -310,7 +310,7 @@ current. With two prefixes delete line above and beyond current."
 #+end_src
 
 Il pacchetto [[https://github.com/benma/visual-regexp.el][visual-regexp]] fornisce una versione molto visuale della
-funzionalità il "search & replace":
+funzionalità di "search & replace":
 #+begin_src emacs-lisp
 (use-package visual-regexp
   :ensure t
@@ -1992,7 +1992,7 @@ use Italian format. With two prefixes full string format."
 	      (delete-file pidfile))))
 #+end_src
 
-* TODO Estetica
+* Estetica
 L'estetica è molto importante e non va affatto sottovalutata. Anche se
 Emacs è molto potente il suo aspetto predefinito non è molto
 accattivante. Invece lavorare con una bella interfaccia, pulita e
