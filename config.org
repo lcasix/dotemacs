@@ -1305,6 +1305,10 @@ Ecco un riepilgo dei /binding/ usati nei modi di sviluppo:
 | move line or region up/down    | =M-up= / =M-down= |
 | put comment at the end of line | =M-;=             |
 | return and comment             | =M-j=             |
+| toggle block visibility        | =C-c +=           |
+| hide block                     | =C-c -=           |
+| hide all blocks                | =C-c M--=         |
+| show all block                 | =C-c M-+=         |
 |--------------------------------+-------------------|
 | jump to definition / back      | =M-.= / =M-*=     |
 | navigate symbol's occurences   | =M-p= / =M-n=     |
@@ -1323,10 +1327,7 @@ Ecco un riepilgo dei /binding/ usati nei modi di sviluppo:
 | compile                        | =F5=              |
 | re-compile                     | =F6=              |
 
-** TODO Funzionalità generali
-#+begin_comment
-Sarebbe opportuno un binding migliore per hide/show mode.
-#+end_comment
+** Funzionalità generali
 Mi piace avere i comandi di compilazione e altri di uso frequente su
 dei tasti facilmente accessibili:
 #+begin_src emacs-lisp
@@ -1393,11 +1394,15 @@ commenti. È una funzione che hanno tutti gli IDE e Emacs non può
 essere da meno.
 #+begin_src emacs-lisp
 (use-package hs-minor-mode
+  :bind (:map hs-minor-mode-map
+              ("C-c +" . hs-toggle-hiding)
+              ("C-c -" . hs-hide-block)
+              ("C-c M-+" . hs-show-all)
+              ("C-c M--" . hs-hide-all))
   :hook (prog-mode sgml-mode))
 #+end_src
-Il problema è il pessimo /binding/ di default sul /prefix/ =C-c @=,
-per esempio
-- =C-c @ C-c= collassa/espande il blocco corrente
+Il /binding/ di default è sul /prefix/ =C-c @=, che non è dei
+migliori.
 
 ** Autocompletamento
 L'autocompletamento è indispensabile e io uso =company=:
