@@ -1319,6 +1319,7 @@ Ecco un riepilgo dei /binding/ usati nei modi di sviluppo:
 | hightlight symbol              | =M-s h .=         |
 | un-highlight symbol            | =M-s h u=         |
 | navigate functions and vars    | =C-s-n=           |
+| list TODO tags in buffer       | =C-c t t=         |
 | toggle line numbering          | =C-c n=           |
 |--------------------------------+-------------------|
 | evaluate function              | =C-c C-x C-c=     |
@@ -1429,10 +1430,7 @@ quando ci si sofferma su un candidato. =company-shell= fornisce
 beckend di completamento con i binary nel =$PATH= e le variabili di
 ambiente.
 
-** TODO Navigazione
-#+begin_comment
-Non sono sicuro che l'advice su dumb-jump-go serva davvero.
-#+end_comment
+** Navigazione
 [[https://github.com/jacktasia/dumb-jump][Dumb jump]] permette di navigare fra le definizioni effettuando una
 semplice ricerca testuale sulla /code base/, risultato così semplice e
 leggero, senza richiedere la costruzione di indici (TAGS) o processi
@@ -1538,34 +1536,37 @@ configurazione di Magit & C.
 (add-hook 'git-commit-setup-hook 'orgalist-mode)
 #+end_src
 
-** TODO Evidenza dei TODO/FIXME
-#+begin_comment
-Ci sono dei package come [[https://github.com/vincekd/comment-tags][comment-tags]] o [[https://github.com/tarsius/hl-todo][hl-todo]] che lo fanno
-sicuramente meglio.
-#+end_comment
+** TODO Supporto tags TODO/FIXME
 Gli IDE evidenziano le righe di codice commentate con parole chiave
-tipo =TODO= e =FIXME=. Ho arrangiato qualcosa io con
-=highlight-lines-matching-regexp=.
+tipo =TODO= e =FIXME=. Il pacchetto [[https://github.com/vincekd/comment-tags][comment-tags]] fa esattamente
+questo.
 #+begin_src emacs-lisp
-(defface highlight-comments-todo
-  '((t (:foreground "#A8C023" :weight bold :inherit (font-lock-comment-face))))
-  "Face for TODO in comments."
-  )
-
-(defface highlight-comments-fixme
-  '((t (:foreground "#A8C023" :weight bold :inherit (font-lock-comment-face))))
-  "Face for FIXME in comments."
-  )
-
-(defun lc/highlight-keywords-in-comments()
-  "Highlights TODO, FIXME, XXX keywords in comments."
-  (highlight-lines-matching-regexp
-   (concat comment-start-skip (regexp-opt '("TODO") 'words)) 'highlight-comments-todo)
-  (highlight-lines-matching-regexp
-   (concat comment-start-skip (regexp-opt '("FIXME" "XXX") 'words)) 'highlight-comments-fixme))
-
-(add-hook 'prog-mode-hook 'lc/highlight-keywords-in-comments)
+(use-package comment-tags
+  :ensure t
+  :config
+  (setq comment-tags-keymap-prefix (kbd "C-c t"))
+  (setq comment-tags-keyword-faces
+        `(("TODO" . ,(list :weight 'bold :foreground "#28ABE3"))
+          ("FIXME" . ,(list :weight 'bold :foreground "#DB3340"))
+          ("BUG" . ,(list :weight 'bold :foreground "#DB3340"))
+          ("XXX" . ,(list :weight 'bold :foreground "#F7EAC8"))))
+  (setq comment-tags-comment-start-only t
+        comment-tags-require-colon t
+        comment-tags-case-sensitive t
+        comment-tags-show-faces t
+        comment-tags-lighter nil)
+  :bind (:map comment-tags-mode-map
+              ("C-c t t" . comment-tags-list-tags-buffer))
+  :hook ((prog-mode) . comment-tags-mode))
 #+end_src
+Ho impostato il /prefix/ su =C-c t= per richiamare le funzioni di
+ricerca dei /tag/ nei buffer. In particolare =C-c t t= mostra una
+lista dei /tag/ nel buffer corrente.
+
+#+begin_comment
+Ci vorrebbe una funzione che sfrutta projectile per fare la ricerca
+dei tag sull'intero progetto.
+#+end_comment
 
 ** Lorem ipsum
 Un bel generatore di /Lorem Ipsum/ è indispensabile, non solo nello
@@ -2097,6 +2098,31 @@ Infine imposto il tema. C'è vasta diponibilità, ma a me piace il
 * Archivio
 Metto qui un po' di vecchie configurazioni che non uso più, ma che
 voglio mantenere per riferimento.
+
+** Evidenza dei TODO nel codice
+Per evidenziare TODO e FIXME nel codice, prima di usare
+=comments-tags= avevo arrangiato qualcosa io con
+=highlight-lines-matching-regexp=.
+#+begin_src elisp
+(defface highlight-comments-todo
+  '((t (:foreground "#A8C023" :weight bold :inherit (font-lock-comment-face))))
+  "Face for TODO in comments."
+  )
+
+(defface highlight-comments-fixme
+  '((t (:foreground "#A8C023" :weight bold :inherit (font-lock-comment-face))))
+  "Face for FIXME in comments."
+  )
+
+(defun lc/highlight-keywords-in-comments()
+  "Highlights TODO, FIXME, XXX keywords in comments."
+  (highlight-lines-matching-regexp
+   (concat comment-start-skip (regexp-opt '("TODO") 'words)) 'highlight-comments-todo)
+  (highlight-lines-matching-regexp
+   (concat comment-start-skip (regexp-opt '("FIXME" "XXX") 'words)) 'highlight-comments-fixme))
+
+(add-hook 'prog-mode-hook 'lc/highlight-keywords-in-comments)
+#+end_src
 
 ** org-pdfview
 org-pdfview è un pacchetto ormai obsoleto che aggiungeva il supporto
