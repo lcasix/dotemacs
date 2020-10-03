@@ -725,6 +725,7 @@ qui.
 #+BEGIN_SRC emacs-lisp
 (use-package dired
   :config
+  (setq dired-recursive-deletes 'always)
   (defun lc/dired-compress-marked-files (filename)
     "Create an archive containing che marked files."
     (interactive "FArchive file name to create: ")
@@ -735,6 +736,9 @@ qui.
   :bind (:map dired-mode-map
               ("z". lc/dired-compress-marked-files)))
 #+END_SRC
+Il valore =always= per la variabile =dired-recursive-deletes= fa in
+modo che Dired elimini le directory ricorsivamente senza chiedere
+conferma.
 
 Uso le estensioni per "nascondere" certi file (/omit mode/) (come le
 directory create da [[https://github.com/gpoore/minted][minted]]) e utilizzarne alcune funzioni.
