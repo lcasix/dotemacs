@@ -1818,6 +1818,26 @@ X-Auth: :token
 [[*Outshine][Outshine]]. Inoltre abilito il /backend/ per l'autocompletamento di
 metodi e /header/ HTTP.
 
+** Docker
+Docker è fondamentale per costruire gli ambienti di
+sviluppo. [[https://github.com/Silex/docker.el][docker.el]] è un'interfaccia per la gestione di Docker da
+Emacs.
+
+#+begin_src emacs-lisp
+(use-package docker
+  :ensure t
+  :bind ("C-c d" . docker))
+#+end_src
+
+Installiamo dei /major mode/ per l'editing dei /Dockerfile/ e
+/docker-compose.yml/, mentre /Docker Tramp/ abilita il supporto per
+connettersi ai /container/ via Tramp.
+#+begin_src emacs-lisp
+(use-package dockerfile-mode :ensure t)
+(use-package docker-compose-mode :ensure t)
+(use-package docker-tramp :ensure t)
+#+end_src
+
 
 * Templating
 
@@ -2016,7 +2036,7 @@ Questa funzione inserisce una password generata con il comando =apg=:
 #+end_src
 
 Questa inserisce la data corrente in vari formati. L'ho assegnata a
-=C-c d=.
+=C-c D=.
 #+begin_src emacs-lisp
 (defun insert-date (prefix)
   "Insert the current date in ISO format. With prefix-argument,
@@ -2028,7 +2048,7 @@ use Italian format. With two prefixes full string format."
 		 ((equal prefix '(16)) "%d %B %Y"))))
     (insert (format-time-string format))))
 
-(global-set-key (kbd "C-c d") 'insert-date)
+(global-set-key (kbd "C-c D") 'insert-date)
 #+end_src
 
 * TODO Emacs server 
