@@ -136,6 +136,19 @@ disponibili quando servono.
 (setq user-full-name (getenv "EMACS_USER_FULL_NAME"))
 #+end_src
 
+** Quick calculator
+Avere a disposizione una piccola calcolatrice è utile e comodo in ogni
+circostanza.
+
+Qui assegno a =F9= l'apertura rapida del [[info:calc#Quick Calculator][Quick Calculator]] di Emacs
+Calc. Il risultato va nel /kill-ring/ e lo si può incollare con il
+consueto =C-y=, oppure =C-j= esegue il calcolo e ne inserisce il
+risultato direttamente nel buffer corrente.
+
+#+begin_src emacs-lisp
+(global-set-key (kbd "<f9>") 'quick-calc)
+#+end_src
+
 ** Help
 Quando si digita un /prefix key/ (=C-x=, =C-c= o altri), /Which key/
 fornisce indicazioni sulle combinazioni disponibili:
@@ -1690,10 +1703,14 @@ quanto nello stesso file si trovano HTML, JavaScript e CSS.
   (flycheck-add-mode 'javascript-eslint 'vue-mode)
   (flycheck-add-mode 'javascript-eslint 'vue-html-mode)
   (flycheck-add-mode 'javascript-eslint 'css-mode)
+  (add-hook 'vue-mode-hook (lambda () (setq syntax-ppss-table nil)))
   :bind
   (("C-M-f" . eslint-fix)))
 #+end_src
-Inoltre in quel /mode/ posso invocare manualmente =eslint-fix= con
+L'/hook/ impostato è un /workaround/ per far funzionare l'indentazione
+in =js-mode= (vedi la [[https://github.com/AdamNiederer/vue-mode/issues/74#issuecomment-577338222][issue]]).
+
+Inoltre in =vue-mode= posso invocare manualmente =eslint-fix= con
 =C-M-f=.
 
 Spesso i framework basati su Vue utilizzano Stylus CSS:
@@ -2055,20 +2072,6 @@ use Italian format. With two prefixes full string format."
 (global-set-key (kbd "C-c D") 'insert-date)
 #+end_src
 
-* TODO Emacs server 
-#+begin_src emacs-lisp
-;; manage server pidfile
-(setq pidfile (concat (getenv "XDG_RUNTIME_DIR") "/emacs-server.pid"))
-(add-hook 'emacs-startup-hook
-	  (lambda () 
-	    (with-temp-file pidfile
-	      (insert (number-to-string (emacs-pid))))))
-(add-hook 'kill-emacs-hook 
-	  (lambda () 
-	    (when (file-exists-p pidfile) 
-	      (delete-file pidfile))))
-#+end_src
-
 * Estetica
 L'estetica è molto importante e non va affatto sottovalutata. Anche se
 Emacs è molto potente il suo aspetto predefinito non è molto
@@ -2213,6 +2216,23 @@ la funzione che lo abilita.
   (defface org-block-end-line
     '((t (:foreground "#006bbf" :background "#002e42")))
     "Face used for the line delimiting the end of source blocks."))
+#+end_src
+
+** Emacs server 
+Il codice seguente gestisce un /pidfile/ per avviare e arrestare un
+server Emacs come servizio di =systemd=. Con la nuova opzione
+=--fg-daemon= di Emacs è diventato obsoleto.
+#+begin_src elisp
+;; manage server pidfile
+(setq pidfile (concat (getenv "XDG_RUNTIME_DIR") "/emacs-server.pid"))
+(add-hook 'emacs-startup-hook
+	  (lambda () 
+	    (with-temp-file pidfile
+	      (insert (number-to-string (emacs-pid))))))
+(add-hook 'kill-emacs-hook 
+	  (lambda () 
+	    (when (file-exists-p pidfile) 
+	      (delete-file pidfile))))
 #+end_src
 
 
