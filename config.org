@@ -25,6 +25,24 @@ qualche variabili d'ambiente, per poterle trovare facilmente.
 
 * Setup di base
 
+** Startup
+Ridurre la frequenza del /garbage collection/ dovrebbe velocizzare
+l'avvio di Emacs. Aggiungo degli /hook/ per misurare il tempo di
+/startup/, come spiegato [[https://github.com/daviwil/dotfiles/blob/master/Emacs.org#startup-performance][qui]].
+#+begin_src emacs-lisp
+;; The default is 800 kilobytes.  Measured in bytes.
+(setq gc-cons-threshold (* 50 1000 1000))
+
+;; Profile emacs startup
+(add-hook 'emacs-startup-hook
+          (lambda ()
+            (message "*** Emacs loaded in %s with %d garbage collections."
+                     (format "%.2f seconds"
+                             (float-time
+                              (time-subtract after-init-time before-init-time)))
+                     gcs-done)))
+#+end_src
+
 ** Pacchetti esterni
 Esistono tantissimi pacchetti esterni che estendono le funzionalità di
 Emacs nei modi più brillanti. Qui aggiungo alle fonti MELPA e il
@@ -2237,7 +2255,49 @@ server Emacs come servizio di =systemd=. Con la nuova opzione
 
 
 * Service
+:PROPERTIES:
+:header-args: :tangle no
+:END:
+
+** Installazione                                                        :env:
+Per installare la configurazione è sufficiente una riga come questa da
+mettere nell'=~/.emacs=:
+#+begin_src emacs-lisp
+(org-babel-load-file "/path/to/config.org")
+#+end_src
+
+Siccome tengo il mio =~/.emacs= sotto versionamento e potrei anche
+decidere di pubblicarlo, ho strutturato un pochino di più le cose e
+carico la configurazione in questo modo:
+#+begin_src emacs-lisp
+;; load literate init file
+(let ((config-file (or (getenv "EMACS_CONFIG") (locate-user-emacs-file "init.org"))))
+  (if (file-exists-p config-file)
+      (org-babel-load-file config-file)
+    (message (concat "No " config-file " found."))))
+
+;; load optional custom config
+(let ((custom (locate-user-emacs-file "custom-config.el")))
+  (if (file-exists-p custom)
+      (progn
+        (load-file custom)
+        (message (concat custom " loaded.")))
+    (message (concat "No " custom " found."))))
+#+end_src
+
+Il /path/ alla configurazione /literate/ può essere specificato nella
+variabile d'ambiente =EMACS_CONFIG=, così da poterlo variare senza
+modificare =.emacs= stesso. Se la variabile non fosse definita si
+cerca di caricare =~/.emacs.d/init.org=. In ogni caso viene fatta una
+verifica preventiva dell'esistenza del file.
+
+Per avere un'ulteriore opportunità di estensione si prova a caricare
+anche un eventuale =~/.emacs.d/custom-config.el=, destinato alle
+configurazioni strettamente personali e riservate.
+
+** Testing
 Per provare la configurazione su una nuova istanza di Emacs:
 #+begin_src sh :eval no
 emacs -q --eval '(org-babel-load-file "~/dev/dotemacs/config.org")'
 #+end_src
+
