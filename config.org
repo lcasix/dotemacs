@@ -65,7 +65,6 @@ nella variabile =package-list=.
         flymake-jslint
         hydra
         ivy-hydra
-        magit
         ob-restclient
         org-link-minor-mode
         org-plus-contrib
@@ -1589,11 +1588,22 @@ alcuni =/var/log=), ma se ne possono aggiungere di personalizzati.
            (aliases)))))
 #+end_src
 
-** TODO Versioning
-#+begin_comment
-La configurazione di org-link-minor-mode e orgalist va inserita nel contesto di
-configurazione di Magit & C.
-#+end_comment
+** Versioning
+[[https://magit.vc/][Magit]] è l'interfaccia definitiva a Git. Non intendo solo per Emacs, ma
+in assoluto. Git è un sistema di versionamento piuttosto complesso,
+specialmente se paragonato a sistemi efficaci, ma più semplici come
+l'ottimo Subversion. Con Magit la gestione di Git fa invidia agli IDE
+più quotati!
+
+Configurarlo è semplicissimo:
+#+begin_src emacs-lisp
+(use-package magit :ensure t)
+#+end_src
+
+Quando si scrivono i log dei commit è utile la possibilità di inserire
+dei link in stile Org ed è quello che fa =org-link-minor-mode=. Stessa
+cosa fa Orgstuct per le liste. Per cui li abilito negli opportuni
+/mode/.
 #+begin_src emacs-lisp
 (use-package org-link-minor-mode
   :hook (log-view-mode log-edit-mode git-commit-setup))
