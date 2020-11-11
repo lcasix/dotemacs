@@ -674,6 +674,9 @@ Qui un riepilogo delle funzioni più utili. Per i dettagli c'è il [[https://doc
 | remove file from project cache   | =M-x projectile-purge-file-from-cache=                      |                         |
 
 ** Setup di Projectile
+:PROPERTIES:
+:CUSTOM_ID: projectile-setup
+:END:
 Projectile è molto personalizzabile, per cui ho fatto qualche modifica
 ai default e ai /binding/. Inoltre ho definito un tipo di progetto per
 [[https://quasar.dev/][Quasar]], un framework con cui sviluppo.
@@ -1511,6 +1514,20 @@ elemento indispensabile per lo sviluppo di qualunque software e
 #+end_src
 Qui lo abilito su tutti i /mode/ per la programmazione e il /web
 development/.
+
+** Refactoring
+Riepilogo un /workflow/ per il refactoring che usa gli strumenti
+disponibili in Emacs. L'idea è tratta da questo [[https://www.manueluberti.eu/emacs/2018/02/10/occur/][post]] di Manuel Uberti.
+
+1. =M-s .= invoca la mia funzione di ricerca del simbolo corrente
+   [[#projectile-setup][lc/counsel-ag-symbol-at-point]]; =M-s s= per una ricerca libera con
+   =counsel-projectile-ag=
+2. =C-c C-o= apre un buffer con le occorrenze (=ivy-occur=)
+3. =C-x C-q= rende il buffer modificabile e le modifiche si propagano
+   ai file originali
+4. =M-%= avvia il /query replace/ per rinominare ogni occorrenza del
+   simbolo nel progetto
+5. =C-x s= e poi =!= salva tutte le modifiche fatte
 
 ** Outshine
 [[https://github.com/alphapapa/outshine][Outshine]] è un /minor mode/ che riproduce le strutture di Org. Lo trovo
