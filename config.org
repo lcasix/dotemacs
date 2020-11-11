@@ -112,6 +112,11 @@ maiuscole.
 (setq read-file-name-completion-ignore-case t)
 #+END_SRC
 
+La visita di un link simbolico apre automaticamente il file puntato.
+#+begin_src emacs-lisp
+(setq vc-follow-symlinks t)
+#+end_src
+
 Infine l'/auto revert/ ricarica automaticamente un /buffer/ quando
 cambia il corrispondente file sul disco.
 #+BEGIN_SRC emacs-lisp
@@ -2122,6 +2127,11 @@ Qui imposto la dimensione dei caratteri e l'effetto di trasparenza:
 ;; frame transparency
 (set-frame-parameter (selected-frame) 'alpha '(92 . 90))
 (add-to-list 'default-frame-alist '(alpha . (92 . 90)))
+#+end_src
+
+La finestra di Emacs parte massimizzata per default (vedi [[https://github.com/daviwil/dotfiles/blob/master/Emacs.org#user-interface][qui]]):
+#+begin_src emacs-lisp
+(set-frame-parameter (selected-frame) 'fullscreen 'maximized)
 #+end_src
 
 Infine imposto il tema. C'è vasta diponibilità, ma a me piace il
