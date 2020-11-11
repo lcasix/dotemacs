@@ -128,6 +128,11 @@ cambia il corrispondente file sul disco.
 
 #+END_SRC
 
+Il pacchetto [[https://github.com/myrjola/diminish.el][diminish]] può nascondere i /minor mode/ dalla /modeline/.
+#+begin_src emacs-lisp
+(use-package diminish :ensure t)
+#+end_src
+
 ** Scratch buffer
 Il pacchetto =scratch= crea rapidamente degli /scratch buffer/ simili
 a quello di default per /elisp/, ma con lo stesso /major mode/ che si
@@ -178,6 +183,7 @@ fornisce indicazioni sulle combinazioni disponibili:
 #+BEGIN_SRC emacs-lisp
 (use-package which-key
   :ensure t
+  :diminish which-key-mode
   :config (which-key-mode))
 #+END_SRC
 
@@ -472,7 +478,9 @@ per non perderlo di vista. Se non lo si vede più si può farlo brillare
 con =C-<menu>= (il tasto con il "menu" sulle tastiere per Windows,
 posizionato accanto al "control" destro).
 #+BEGIN_SRC emacs-lisp
-(use-package beacon :ensure t
+(use-package beacon 
+  :ensure t
+  :diminish beacon-mode
   :hook (after-init . beacon-mode)
   :config
   (global-set-key (kbd "C-<menu>") 'beacon-blink))
@@ -487,6 +495,7 @@ quelle angolari tipiche dei tag XML).
 ;; wrap-region setup with custom wrappers
 (use-package wrap-region
   :ensure t
+  :diminish wrap-region-mode
   :config
   (wrap-region-add-wrappers
    '(("=" "=" nil org-mode)
@@ -576,6 +585,7 @@ Ivy è un frontend per il completamento dei nomi e non solo. Imprescindibile.
 ;; ivy completion setup
 (use-package ivy
   :ensure t
+  :diminish ivy-mode
   :demand t
   :config
   (setq ivy-use-virtual-buffers t)
@@ -2313,4 +2323,3 @@ Per provare la configurazione su una nuova istanza di Emacs:
 #+begin_src sh :eval no
 emacs -q --eval '(org-babel-load-file "~/dev/dotemacs/config.org")'
 #+end_src
-
