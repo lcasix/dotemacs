@@ -1,3 +1,5 @@
+# -*- flyspell-mode: t -*-
+
 #+TITLE: Configurazione di Emacs
 #+DATE: [2020-02-05 mer 22:38]
 #+AUTHOR: Leonardo Casini
@@ -16,7 +18,7 @@
 #+STARTUP: content
 
 
-Questo è la mia configurazione di Emacs. Ho usato lo stile /literate
+Questa è la mia configurazione di Emacs. Ho usato lo stile /literate
 programming/ perché contenesse non solo il codice, ma anche la
 documentazione e i miei flussi di lavoro.
 
@@ -397,6 +399,7 @@ Principali funzioni per il taglio del testo:
 | copy region                    | =M-y=       |
 | kill region                    | =C-w=       |
 | kill whole line                | =C-K=       |
+| kill sentence                  | =M-k=       |
 | kill espression                | =C-M-k=     |
 | copy region                    | =C-x r M-w= |
 | kill rectangle                 | =C-x r k=   |
@@ -520,7 +523,7 @@ fornisce un supporto completo. Questi sono i miei /binding/:
 Il venerando =grep= è sempre nel mio cuore, ma oggi esistono
 alternative molto più veloci. Uno di queste è /Silver Searcher/, o
 =ag=, che su Debian si può installare così:
-#+begin_src sh
+#+begin_src sh :eval no
 apt install silversearcher-ag
 #+end_src
 
@@ -1486,7 +1489,8 @@ ambiente.
 [[https://github.com/jacktasia/dumb-jump][Dumb jump]] permette di navigare fra le definizioni effettuando una
 semplice ricerca testuale sulla /code base/, risultato così semplice e
 leggero, senza richiedere la costruzione di indici (TAGS) o processi
-ijn /background/. Pur con tutti i suoi limiti è abbastanza veloce ed efficace.
+in /background/. Pur con tutti i suoi limiti è abbastanza veloce ed
+efficace.
 #+begin_src emacs-lisp
 (use-package dumb-jump
   :ensure t
@@ -1903,7 +1907,6 @@ metodi e /header/ HTTP.
 Docker è fondamentale per costruire gli ambienti di
 sviluppo. [[https://github.com/Silex/docker.el][docker.el]] è un'interfaccia per la gestione di Docker da
 Emacs.
-
 #+begin_src emacs-lisp
 (use-package docker
   :ensure t
@@ -1911,7 +1914,7 @@ Emacs.
 #+end_src
 
 Installiamo dei /major mode/ per l'editing dei /Dockerfile/ e
-/docker-compose.yml/, mentre /Docker Tramp/ abilita il supporto per
+/docker-compose.yml/, mentre [[https://github.com/emacs-pe/docker-tramp.el][Docker Tramp]] abilita il supporto per
 connettersi ai /container/ via Tramp.
 #+begin_src emacs-lisp
 (use-package dockerfile-mode :ensure t)
@@ -1924,9 +1927,10 @@ connettersi ai /container/ via Tramp.
 
 ** TODO Yasnippet                                                       :env:
 #+begin_comment
-Ci vorrebbe un /binding/ sensato per l'espansione di una region e un
-bel riepilgo degli snippet disponibili per ogni mode, perché c'è il
-rischio di non usarli mai perché non mi ricordo quali sono.
+Ci vorrebbe un /binding/ sensato per l'espansione di uno snippet su
+una region e un bel riepilgo degli snippet disponibili per ogni mode,
+perché c'è il rischio di non usarli mai perché non mi ricordo quali
+sono.
 #+end_comment
 
 [[https://github.com/joaotavora/yasnippet][Yasnippet]] è /il/ sistema di template per Emacs. La directory degli
