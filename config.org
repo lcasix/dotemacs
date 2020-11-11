@@ -2151,6 +2151,9 @@ Infine imposto il tema. C'è vasta diponibilità, ma a me piace il
 
 
 * Archivio
+:PROPERTIES:
+:header-args: :tangle no
+:END:
 Metto qui un po' di vecchie configurazioni che non uso più, ma che
 voglio mantenere per riferimento.
 
@@ -2158,7 +2161,7 @@ voglio mantenere per riferimento.
 Per evidenziare TODO e FIXME nel codice, prima di usare
 =comments-tags= avevo arrangiato qualcosa io con
 =highlight-lines-matching-regexp=.
-#+begin_src elisp
+#+begin_src emacs-lisp
 (defface highlight-comments-todo
   '((t (:foreground "#A8C023" :weight bold :inherit (font-lock-comment-face))))
   "Face for TODO in comments."
@@ -2185,7 +2188,7 @@ ai link Org nei file PDF. Ora è superato da [[https://github.com/fuxialexander/
 non ne faccio uso, ma potrebbe servirmi in futuro.
 
 La vecchia configurazione era questa:
-#+begin_src elisp
+#+begin_src emacs-lisp
 (use-package org-pdftools
   :ensure t
   :hook (org-load . org-pdftools-setup-link))
@@ -2197,7 +2200,7 @@ DApp per la /blockchain/ di Ethereum. Al momento non ne faccio più
 uso, ma potrebbe ritornare utile in futuro. Nel caso bisogna assegnare
 alla variabile =EMACS_SOLIDITY_PATH= il /path/ assoluto all'eseguibile
 di /Solidity/.
-#+begin_src elisp
+#+begin_src emacs-lisp
 (use-package solidity-mode
   :ensure t
   :config
@@ -2220,7 +2223,7 @@ di /Solidity/.
 Prima di adottare il =moe-theme= ho usato il tema "Misterioso", che è
 fra quelli già inclusi con Emacs. Tengo comunque qui per riferimento
 la funzione che lo abilita.
-#+begin_src elisp
+#+begin_src emacs-lisp
 (defun lc/misterioso-theme ()
   "Abilita il tema 'misterioso' e le relative personalizzazioni."
 
@@ -2250,7 +2253,7 @@ la funzione che lo abilita.
 Il codice seguente gestisce un /pidfile/ per avviare e arrestare un
 server Emacs come servizio di =systemd=. Con la nuova opzione
 =--fg-daemon= di Emacs è diventato obsoleto.
-#+begin_src elisp
+#+begin_src emacs-lisp
 ;; manage server pidfile
 (setq pidfile (concat (getenv "XDG_RUNTIME_DIR") "/emacs-server.pid"))
 (add-hook 'emacs-startup-hook
