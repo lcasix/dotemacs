@@ -2009,25 +2009,24 @@ soprattutto ai log di commit."
   "- " _ \n
   )
 
-;; common abbrevs
-(define-abbrev-table 'global-abbrev-table '(
-    
-    ;; me
-    ("8me" "" (lambda () (insert user-full-name)))
-    ("8mail" "" (lambda () (insert user-mail-address)))
+;; global abbrevs
+;; me
+(define-abbrev global-abbrev-table "8me" "" (lambda () (insert user-full-name)))
+(define-abbrev global-abbrev-table "4mail" "" (lambda () (insert user-mail-address)))
+(define-abbrev global-abbrev-table "8mail" "" (lambda () (insert (format "%s <%s>" user-full-name user-mail-address))))
 
-    ;; work
-    ("8log" "" lc/activity-log)
+;; work
+(define-abbrev global-abbrev-table "8log" "" 'lc/activity-log)
 
-    ;; misc
-    ("4lorem" "" (lambda () (lorem-ipsum-insert-sentences)))
-    ("8lorem" "" (lambda () (lorem-ipsum-insert-paragraphs)))
-    ))
+;; misc
+(define-abbrev global-abbrev-table "E'" "È")
+(define-abbrev global-abbrev-table "cmq" "comunque")
+(define-abbrev global-abbrev-table "xke" "perché")
+(define-abbrev global-abbrev-table "4lorem" "" (lambda () (lorem-ipsum-insert-sentences)))
+(define-abbrev global-abbrev-table "8lorem" "" (lambda () (lorem-ipsum-insert-paragraphs)))
 
-;; org mode
-(define-abbrev-table 'org-mode-abbrev-table
-  '(("8ref" "" lc/reference-list)
-    ))
+;; org mode abbrevs
+(define-abbrev org-mode-abbrev-table "8ref" "" 'lc/reference-list)
 #+end_src
 
 
