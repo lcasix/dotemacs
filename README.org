@@ -1,0 +1,30 @@
+#+TITLE: dotemacs
+#+DATE: [2020-11-20 ven 18:59]
+#+AUTHOR: Leonardo Casini
+#+EMAIL: mail@leonardocasini.net
+
+#+LANGUAGE: it
+#+SELECT_TAGS: export
+#+EXCLUDE_TAGS: noexport
+#+CREATOR: Emacs 26.3 (Org mode 9.3.6)
+
+#+OPTIONS: ':nil *:t -:t ::t <:active H:3 \n:nil ^:t arch:headline
+#+OPTIONS: author:t c:nil creator:nil d:(not "LOGBOOK") date:t e:t
+#+OPTIONS: email:nil f:t inline:t num:t p:nil pri:nil prop:nil stat:t
+#+OPTIONS: tags:t tasks:t tex:t timestamp:t title:t toc:t todo:t |:t
+
+
+Questa è la mia configurazione di Emacs in stile /literate
+programming/.
+
+* Installazione
+Una volta clonato il repository con
+#+begin_src sh :eval no
+git clone https://github.com/lcasix/dotemacs.git
+#+end_src
+basta aggiungere una linea come questa nel =.emacs=
+#+begin_src emacs-lisp :eval no
+(org-babel-load-file "/path/to/dotemacs/config.org")
+#+end_src
+
+Per informazioni dettagliate consultare =config.org=.
