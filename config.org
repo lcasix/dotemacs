@@ -2064,9 +2064,16 @@ l'/header/ =from=, così per esempio si può decidere il server SMTP in
 base all'indirizzo del mittente.
 
 Nell'/editing/ delle mail sono comode le funzioni per le liste di Org.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
+;; FIXME: temporaneamente disabilitato
 (add-hook 'message-mode-hook 'orgalist-mode)
 #+end_src
+#+begin_comment
+Temporaneamente disabilitato perché in conflitto con Yasnippet: in
+=auto-fill-mode= si richiamano ricorsivamente le funzioni di /fill/ di
+orgalist e yasnippet. Lo si può osservare impostando =(setq
+debug-on-error t)= e componendo un'email fino a innescare l'auto fill.
+#+end_comment
 
 Il pacchetto =ol-notmuch= abilita i link alle e-mail nei file
 Org. Questa funzionalità è *fondamentale*:
