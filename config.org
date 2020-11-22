@@ -499,6 +499,34 @@ posizionato accanto al "control" destro).
   (global-set-key (kbd "C-<menu>") 'beacon-blink))
 #+END_SRC
 
+** Word wrap
+Quando scrivo del testo uso generalmente l'=auto-fill-mode=, ma in
+alcuni casi può farmi comodo il =visual-line-mode= ([[https://emacs.stackexchange.com/questions/27278/soft-vs-hard-word-wrap-in-emacs][qui]] una breve
+spiegazione). Quest'ultimo però effettua il /word wrap/ solo al bordo
+della finestra. Il [[https://github.com/joostkremers/visual-fill-column][Visual Fill Column]] /mode/ esegue il /wrap/ alla
+stessa colonna del /fill/.
+#+begin_src emacs-lisp
+(use-package visual-fill-column
+  :ensure t
+  :preface
+  (defun lc/visual-line-mode ()
+    "Toggle `visual-line-mode' with `visual-fill-column'."
+    (interactive)
+    (if visual-line-mode
+        (progn (visual-fill-column-mode -1)
+               (visual-line-mode -1)
+               (turn-on-auto-fill))
+      (visual-line-mode t)
+      (visual-fill-column-mode t)
+      (turn-off-auto-fill)))
+    :bind ("C-<Scroll_Lock>" . lc/visual-line-mode))
+#+end_src
+Aggiungere il =visual-fill-column-mode= al =visual-line-mode-hook=
+come consigliato nella documentazione lo abilita solo all'attivazione
+del /word wrap/, ma non lo disabilita alla disattivazione. Inoltre il
+/word wrap/ è inutile con l'/auto fill/. Così ho scritto la funzione
+=lc/visual-line-mode= per fare il /toggle/ di tutti.
+
 ** Wrap region
 /Wrap region/ "avvolge" (/wrap/) una /region/, cioè aggiunge un
 carattere all'inizio e alla fine come una coppia di parentesi. Molto
