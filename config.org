@@ -258,6 +258,15 @@ anche evidenziare le coppie di parentesi corrispondenti.
   :hook (after-init . show-paren-mode))
 #+END_SRC
 
+I comandi che operano sulle frasi seguono la convenzione americana di
+considerarne la fine quando il punto è seguito da due spazi. Poiché
+gli americani fanno molto uso dele abbreviazioni, questo serve a
+distinguerle dalla fine della frase. Io non uso molte abbreviazioni,
+quindi per me la frase finisce con un punto seguito da un solo spazio.
+#+begin_src emacs-lisp
+(setq sentence-end-double-space nil)
+#+end_src
+
 ** Editing
 Un riepilogo di funzionalità utili quando si lavora sul testo:
 | function                         | binding   |
@@ -265,14 +274,13 @@ Un riepilogo di funzionalità utili quando si lavora sul testo:
 | insert space after point         | =C-M-SPC= |
 | smart newline (not in Org)       | =S-RET=   |
 | smart newline above (not in Org) | =M-S-RET= |
-| put exactly one space at point   | =M-\=     |
-| leave no space at point          | =M-0 M-\= |
+| delete space at point            | =M-\=     |
 | insert newline after point       | =C-o=     |
 | delete blank lines around point  | =C-x C-o= |
 | join next line                   | =C-^=     |
 | set fill column to /arg/         | =C-x f=   |
 | prefix each line with /arg/      | =C-x .=   |
-| comment/uncomment region         | =C-x /=   |
+| comment/uncomment line or region | =C-x /=   |
 |----------------------------------+-----------|
 | auto completion                  | =M-/=     |
 |----------------------------------+-----------|
@@ -294,8 +302,11 @@ riorganizzo.
 ;; general editing keybindings
 (global-set-key (kbd "C-x /") 'comment-or-uncomment-region)
 (global-set-key (kbd "M-/") 'hippie-expand)
-(global-set-key (kbd "M-\\") 'just-one-space)
-(global-set-key (kbd "C-x M-o") 'delete-horizontal-space)
+(global-set-key (kbd "M-\\") 'cycle-spacing)
+(global-set-key (kbd "<Scroll_Lock>") 'scroll-lock-mode)
+(global-set-key [remap upcase-word] 'upcase-dwim)
+(global-set-key [remap downcase-word] 'downcase-dwim)
+(global-set-key [remap capitalize-word] 'capitalize-dwim)
 #+end_src
 
 Il pacchetto [[https://github.com/bbatsov/crux][Crux]] contiene numerosissime funzioni di utilità
