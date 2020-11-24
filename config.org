@@ -118,7 +118,7 @@ La visita di un link simbolico apre automaticamente il file puntato.
 (setq vc-follow-symlinks t)
 #+end_src
 
-Infine l'/auto revert/ ricarica automaticamente un /buffer/ quando
+L'/auto revert/ ricarica automaticamente un /buffer/ quando
 cambia il corrispondente file sul disco.
 #+BEGIN_SRC emacs-lisp
 (use-package autorevert
@@ -143,6 +143,19 @@ sta utilizzando.
   :ensure t
   :bind (("C-c s" . scratch)))
 #+END_SRC
+
+** Follow mode
+Il /follow mode/ sfrutta lo spazio di uno schermo ampio per presentare
+un buffer in colonne (utilizzando le finestre aperte nello stesso
+frame). Il /binding/ =M-§= lo attiva su due colonne.
+#+begin_src emacs-lisp
+(use-package follow
+  :bind
+  ("M-§" . follow-delete-other-windows-and-split))
+#+end_src
+Ogni nuova finestra aperta con =C-x 3= si aggiungerà alle colonne. In
+questo contesto è utile il comando =C-x += (=balance-windows=) che
+ridimensiona le finestre alla stessa larghezza.
 
 ** Dashboard
 /Dashboard/ per la selezione rapida di un buffer.
