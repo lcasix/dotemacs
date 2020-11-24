@@ -381,18 +381,6 @@ current. With two prefixes delete line above and beyond current."
 (global-set-key [remap delete-blank-lines] 'lc/delete-blank-lines-above)
 #+end_src
 
-Il pacchetto [[https://github.com/benma/visual-regexp.el][visual-regexp]] fornisce una versione molto visuale della
-funzionalità di "search & replace":
-#+begin_src emacs-lisp
-(use-package visual-regexp
-  :ensure t
-  :bind (("M-%" . vr/query-replace)))
-
-(use-package visual-regexp-steroids
-  :ensure t
-  :after visual-regexp)
-#+end_src
-
 ** Marking
 /Binding/ per la selezione di una /region/:
 | function              | binding   |
@@ -470,6 +458,19 @@ ispirazione da [[https://stackoverflow.com/a/3669629][qui]].
     (if filename (kill-new filename))
     (message "%s" filename)))
 (global-set-key (kbd "C-c M-w") 'lc/kill-file-path)
+#+end_src
+
+** Search & replace
+Il pacchetto [[https://github.com/benma/visual-regexp.el][visual-regexp]] fornisce una versione molto visuale della
+funzionalità di "search & replace":
+#+begin_src emacs-lisp
+(use-package visual-regexp
+  :ensure t
+  :bind ([remap query-replace] . vr/query-replace))
+
+(use-package visual-regexp-steroids
+  :ensure t
+  :after visual-regexp)
 #+end_src
 
 ** Navigazione
