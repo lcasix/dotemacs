@@ -541,6 +541,18 @@ del /word wrap/, ma non lo disabilita alla disattivazione. Inoltre il
 /word wrap/ è inutile con l'/auto fill/. Così ho scritto la funzione
 =lc/visual-line-mode= per fare il /toggle/ di tutti.
 
+Il /packege/ [[https://github.com/purcell/unfill][unfill]] esegue l'operazione inversa di =fill-paragraph=,
+cioè riporta un paragrafo su una sola riga di testo dopo che ne è
+stato fatto l'/hard wrap/.
+#+begin_src emacs-lisp
+(use-package unfill
+  :ensure t
+  :bind ([remap fill-paragraph] . unfill-toggle))
+#+end_src
+Faccio il remapping di =fill-paragraph= per sostituirlo con
+=unfill-toggle=. Da notare che in Org mode rimane il /binding/ alla
+specifica funzione =org-fill-paragraph=.
+
 ** Wrap region
 /Wrap region/ "avvolge" (/wrap/) una /region/, cioè aggiunge un
 carattere all'inizio e alla fine come una coppia di parentesi. Molto
