@@ -474,12 +474,17 @@ funzionalità di "search & replace":
 #+end_src
 
 ** Navigazione
-| function          | binding |
-|-------------------+---------|
-| jump              | =s-SPC= |
-|-------------------+---------|
-| bookmark position | =C-x P= |
-| jump to position  | =C-x p= |
+| function          | binding     |
+|-------------------+-------------|
+| jump              | =s-SPC=     |
+|-------------------+-------------|
+| bookmark position | =C-x P=     |
+| jump to position  | =C-x p=     |
+|-------------------+-------------|
+| switch to buffer  | =C-x b=     |
+| buffer list       | =C-x B=     |
+| next buffer       | =C-x right= |
+| previous buffer   | =C-x left=  |
 
 Per spostarmi nel testo uso il puntamento basato sui caratteri invece
 del mouse. Molto più comodo ed efficiente.
@@ -784,8 +789,8 @@ search args."
         ("C-s-4 d" . projectile-find-dir-other-window)
         ("C-s-S-d" . projectile-dired)
         ("C-s-v" . projectile-vc)
-        ("C-s-<right>" . projectile-recentf)
-        ("C-s-<left>" . projectile-project-buffers-other-buffer)
+        ([remap previous-buffer] . projectile-previous-project-buffer)
+        ([remap next-buffer] . projectile-next-project-buffer)
         ("C-s-o" . projectile-multi-occur)
         ("C-s-!" . projectile-run-shell-command-in-root)
         ("C-s-&" . projectile-run-async-shell-command-in-root)
@@ -793,7 +798,7 @@ search args."
         ("C-s-x t" . projectile-run-term)
         ("C-s-x e" . projectile-run-eshell)
         ("M-s ." . lc/counsel-ag-symbol-at-point)
-        ("C-s-r" . ivy-resume)))
+        ("C-s-r" . projectile-recentf)))
 #+END_SRC
 
 #+begin_quote
