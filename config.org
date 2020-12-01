@@ -1794,9 +1794,8 @@ i /fix/ suggeriti da ESLint.
   :ensure t
   :after js
   :config
-  (add-hook 'js-mode-hook (lambda () (add-hook 'after-save-hook 'eslint-fix nil t)))
-  (add-hook 'vue-mode-hook (lambda () (add-hook 'after-save-hook 'eslint-fix nil t)))
-  )
+  (setq eslint-fix-executable (getenv "EMACS_ESLINT_PATH"))
+  (add-hook 'js-mode-hook (lambda () (add-hook 'after-save-hook 'eslint-fix nil t))))
 #+end_src
 
 #+begin_comment
@@ -1820,10 +1819,7 @@ funzioni, il refactoring, ecc.
 (use-package tern
   :ensure t
   :after js
-  :hook ((js-mode vue-mode) . tern-mode)
-  :bind (:map js-mode-map
-              ("M-." . tern-find-definition)
-              ("M-*" . tern-pop-find-definition)))
+  :hook ((js-mode vue-mode web-mode) . tern-mode))
 
 (use-package company-tern
   :ensure t
@@ -1832,35 +1828,11 @@ funzioni, il refactoring, ecc.
   (push 'company-tern company-backends))
 #+end_src
 
-Sviluppando componenti di Vue.js è comodo il supporto a Flycheck, in
-quanto nello stesso file si trovano HTML, JavaScript e CSS.
+Abilito anche il supporto per il Typescript.
 #+begin_src emacs-lisp
-(use-package vue-mode
-  :ensure t
-  :after flycheck
+(use-package typescript-mode :ensure t
   :config
-  (flycheck-add-mode 'javascript-eslint 'vue-mode)
-  (flycheck-add-mode 'javascript-eslint 'vue-html-mode)
-  (flycheck-add-mode 'javascript-eslint 'css-mode)
-  (add-hook 'vue-mode-hook (lambda () (setq syntax-ppss-table nil)))
-  :bind
-  (("C-M-f" . eslint-fix)))
-#+end_src
-L'/hook/ impostato è un /workaround/ per far funzionare l'indentazione
-in =js-mode= (vedi la [[https://github.com/AdamNiederer/vue-mode/issues/74#issuecomment-577338222][issue]]).
-
-Inoltre in =vue-mode= posso invocare manualmente =eslint-fix= con
-=C-M-f=.
-
-Spesso i framework basati su Vue utilizzano Stylus CSS:
-#+begin_src emacs-lisp
-(use-package jade-mode :ensure t)
-
-(use-package sws-mode
-  :ensure t
-  :after jade-mode
-  :config
-  (add-to-list 'auto-mode-alist '("\\.styl\\'" . sws-mode)))
+  (add-hook 'typescript-mode-hook (lambda () (add-hook 'after-save-hook 'eslint-fix nil t))))
 #+end_src
 
 #+begin_comment
@@ -1882,44 +1854,93 @@ con =js-mode=:
               ("C-x n z" . nodejs-repl-switch-to-repl)))
 #+end_src
 
-** TODO Web development
-#+begin_comment
-Dovrei davvero valutare l'adozione di web-mode.
-#+end_comment
-=sgml-mode= è il /major mode/ da cui derivano un po' tutti i /mode/
-per i linguaggi di marcatura. Quindi ho fatto il /binding/ di alcune
-funzioni utili a navigare fra i /tag/.
+** Vue
+Il [[https://github.com/AdamNiederer/vue-mode][vue-mode]] è comodo per sviluppare i componenti di Vue, che uniscono
+nello stesso file HTML, JavaScript e CSS.
 #+begin_src emacs-lisp
-(use-package sgml-mode
-  ;; rebind tags navigation keys
-  :bind (:map sgml-mode-map
-              ("<M-left>" . sgml-skip-tag-backward)
-              ("<M-right>" . sgml-skip-tag-forward)
-              ("M-h" . er/mark-inner-tag)
-              ("<backtab>" . sgml-pretty-print)))
+(use-package vue-mode
+  :ensure t
+  :after flycheck
+  :config
+  (flycheck-add-mode 'javascript-eslint 'vue-mode)
+  (flycheck-add-mode 'javascript-eslint 'vue-html-mode)
+  (flycheck-add-mode 'javascript-eslint 'css-mode)
+  (add-hook 'vue-mode-hook (lambda () (setq syntax-ppss-table nil)))
+  (add-hook 'vue-mode-hook (lambda () (add-hook 'after-save-hook 'eslint-fix nil t)))
+  :bind
+  (("C-M-f" . eslint-fix)))
+#+end_src
+L'/hook/ che imposta la variabile =syntax-ppss-table= è un
+/workaround/ per far funzionare l'indentazione in =js-mode= (vedi la
+[[https://github.com/AdamNiederer/vue-mode/issues/74#issuecomment-577338222][issue]]).
+
+Inoltre in =vue-mode= posso invocare manualmente =eslint-fix= con
+=C-M-f=.
+
+Spesso i framework basati su Vue utilizzano Stylus CSS:
+#+begin_src emacs-lisp
+(use-package jade-mode :ensure t)
+
+(use-package sws-mode
+  :ensure t
+  :after jade-mode
+  :config
+  (add-to-list 'auto-mode-alist '("\\.styl\\'" . sws-mode)))
 #+end_src
 
-#+begin_comment
-C'è qualcosa di meglio rispetto a dover installare manualmente
-hl-tags-mode? Forse web-mode ha già questa funzione.
-#+end_comment
-=hl-tags-mode= evidenzia i /tags/ corrispondenti. La libreria va
-scaricata da [[https://github.com/deactivated/hl-tags-mode][qui]] e installata sotto =~/.emacs.d/elisp/=, dopodiché
-la si può importare:
+Riferimenti:
+- https://azzamsa.com/n/vue-emacs/
+
+** Web development
+[[https://web-mode.org/][Web Mode]] è una soluzione completa per lo sviluppo web.
+
+Generalmente Web mode suddivide i /keybinding/ in categorie usando
+/prefix key/ mnemonici:
+- =C-c C-e= per i comandi che agiscono sugli *elementi* HTML
+- =C-c C-t= per i comandi che agiscono sui *tag* HTML
+- =C-c C-a= per i comandi che agiscono sugli *attributi* HTML
+/Which Key/ fornisce un riepilogo dei comandi per ogni categoria.
+
 #+begin_src emacs-lisp
-(use-package hl-tags-mode
-  :hook sgml-mode)
+(use-package web-mode
+  :ensure t
+  :after flycheck
+  :config
+  (setq web-mode-enable-current-element-highlight t)
+  (setq web-mode-enable-current-column-highlight t)
+  (setq web-mode-script-padding nil)
+  (setq web-mode-style-padding nil)
+  (flycheck-add-mode 'javascript-eslint 'web-mode)
+  (add-hook 'web-mode-hook (lambda () (add-hook 'after-save-hook 'eslint-fix nil t)))
+  :mode ("\\.\\(html?\\|vue\\)\\'")
+  :bind (:map web-mode-map
+              ("C-@" . web-mode-mark-and-expand)
+              ("C-c +" . web-mode-fold-or-unfold)
+              ("C-M-f" . eslint-fix)))
 #+end_src
+Le variabili =web-mode-enable-current-element-highlight= e
+=web-mode-enable-current-column-highlight= abilitano l'evidenza del
+tag corrente, mentre =web-mode-script-padding= e
+=web-mode-style-padding= evitano che le righe nei tag =<script>= e
+=<style>= vengano rientrate di uno spazio.
+
+Inoltre abilito /Flycheck/ per il codice JavaScript.
+
+#+begin_comment
+Attualmente /Vue Mode/ ha dei problemi, in particolare con il /syntax
+highlighting/, e quindi preferisco sviluppare i componenti in /Web
+Mode/ anche se è meno specifico.
+#+end_comment
 
 [[https://www.emmet.io/][Emmet]] è un /toolkit/ per velocizzare la scrittura di codice HTML e
 CSS, e naturalmente è supportato da Emacs:
 #+begin_src emacs-lisp
 (use-package emmet-mode
   :ensure t
-  :hook (sgml-mode css-mode))
+  :hook (web-mode css-mode))
 #+end_src
 Il /binding/ di /default/ per espandere gli /shortcut/ di Emmet è
-=C-j=.
+=C-j=. C'è un'utile [[https://docs.emmet.io/cheat-sheet/][cheat sheet]] con le espansioni.
 
 Infine un po' di autocompletamento per HTML, Bootstrap, ecc.
 #+begin_src emacs-lisp
@@ -1930,15 +1951,15 @@ Infine un po' di autocompletamento per HTML, Bootstrap, ecc.
   :after (company ac-html))
 
 (use-package company-web-html
-  :after (sgml-mode company-web)
-  :bind (:map html-mode-map
+  :after (web-mode company-web)
+  :bind (:map web-mode-map
               ("M-SPC" . company-web-html)))
 
 (use-package ac-html-bootstrap
   :ensure t
   :after company-web
   :config
-  (add-hook 'html-mode-hook
+  (add-hook 'web-mode-hook
             (lambda()
               (company-web-bootstrap+)
               (company-web-fa+))))
