@@ -1688,13 +1688,14 @@ cosa fa Orgstuct per le liste. Per cui li abilito negli opportuni
 (add-hook 'git-commit-setup-hook 'orgalist-mode)
 #+end_src
 
-** TODO Supporto tags TODO/FIXME
+** Supporto tags TODO/FIXME
 Gli IDE evidenziano le righe di codice commentate con parole chiave
 tipo =TODO= e =FIXME=. Il pacchetto [[https://github.com/vincekd/comment-tags][comment-tags]] fa esattamente
 questo.
 #+begin_src emacs-lisp
 (use-package comment-tags
   :ensure t
+  :after magit-todos
   :config
   (setq comment-tags-keymap-prefix (kbd "C-c t"))
   (setq comment-tags-keyword-faces
@@ -1708,17 +1709,19 @@ questo.
         comment-tags-show-faces t
         comment-tags-lighter nil)
   :bind (:map comment-tags-mode-map
-              ("C-c t t" . comment-tags-list-tags-buffer))
+              ("C-c t t" . comment-tags-list-tags-buffer)
+              ("C-c t l" . 'magit-todos-list))
   :hook ((prog-mode) . comment-tags-mode))
 #+end_src
 Ho impostato il /prefix/ su =C-c t= per richiamare le funzioni di
 ricerca dei /tag/ nei buffer. In particolare =C-c t t= mostra una
 lista dei /tag/ nel buffer corrente.
 
-#+begin_comment
-Ci vorrebbe una funzione che sfrutta projectile per fare la ricerca
-dei tag sull'intero progetto.
-#+end_comment
+Il comando =C-c t l= mostra una lista di tutti i /tag/ nel progetto,
+grazie a [[https://github.com/alphapapa/magit-todos][magit-todos]].
+#+begin_src emacs-lisp
+(use-package magit-todos :ensure t)
+#+end_src
 
 ** Lorem ipsum
 Un bel generatore di /Lorem Ipsum/ è indispensabile, non solo nello
