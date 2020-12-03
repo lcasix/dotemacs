@@ -181,7 +181,9 @@ assegno a delle variabili globali di Emacs in modo che siano sempre
 disponibili quando servono.
 #+begin_src emacs-lisp
 ;; user info
-(setq user-full-name (getenv "EMACS_USER_FULL_NAME"))
+(setq user-full-name (getenv "EMACS_USER_FULL_NAME")
+      user-site-url (getenv "EMACS_USER_SITE")
+)
 #+end_src
 
 ** Quick calculator
