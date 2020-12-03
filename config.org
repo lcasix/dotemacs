@@ -2009,17 +2009,15 @@ connettersi ai /container/ via Tramp.
 
 * Templating
 
-** TODO Yasnippet                                                       :env:
-#+begin_comment
-Ci vorrebbe un /binding/ sensato per l'espansione di uno snippet su
-una region e un bel riepilgo degli snippet disponibili per ogni mode,
-perché c'è il rischio di non usarli mai perché non mi ricordo quali
-sono.
-#+end_comment
-
+** Yasnippet                                                            :env:
 [[https://github.com/joaotavora/yasnippet][Yasnippet]] è /il/ sistema di template per Emacs. La directory degli
 snippet è letta dalla variabile =EMACS_YAS_TEMPLATES=, altrimenti il
 default è =~/.yasnippets=.
+
+Gli /snippet/ sono espansi con =C-<TAB>=, oppure =C-c <TAB>= permette
+di scegliere fra gli /snippet/ disponibili per il /mode/ corrente. In
+questo modo si possono anche espandere gli /snippet/ intorno a una
+/region/.
 #+begin_src emacs-lisp
 ;; yasnippet config
 (use-package yasnippet
@@ -2031,12 +2029,12 @@ default è =~/.yasnippets=.
   :bind
   (:map yas-minor-mode-map
         ("C-c y C-s" . yas-insert-snippet)
-        ("C-c y <tab>" . yas-insert-snippet)
         ("C-c y C-n" . yas-new-snippet)
         ("C-c y C-v" . yas-visit-snippet-file)
         ("C-c &" . nil)
         ;; remap expand to C-TAB (otherwise conflicts with Org easy templates)
         ("C-<tab>". yas-expand)
+        ("C-c <tab>" . yas-insert-snippet)
         ("<tab>" . nil)
         ("TAB" . nil)
         ))
@@ -2050,9 +2048,7 @@ default è =~/.yasnippets=.
     (yas-expand-snippet (buffer-string) (point-min) (point-max)))
   :config
   (setq auto-insert-query nil)
-  (define-auto-insert '(org-mode . "Org standard headers") ["org-template.org" lc/autoinsert-yas-expand])
-  (define-auto-insert "\\.html$" ["html5-template.html" lc/autoinsert-yas-expand])
-  (define-auto-insert "\\.vue$" ["vue-component-template.vue" lc/autoinsert-yas-expand])
+  (setq auto-insert-directory (or (getenv "EMACS_YAS_AUTOINSERT") auto-insert-directory))
   (auto-insert-mode 1)
   :hook (find-file . auto-insert))
 #+end_src
@@ -2063,14 +2059,17 @@ file fra quelli definiti con =define-auto-insert=, questo viene
 popolato dal template indicato. Poiché questi template hanno la
 sintassi degli snippet, dopo che =autoinsert= li ha copiati viene
 invocata la funzione =lc/autoinsert-yas-expand=, la quale non fa altro
-che espanderli. I template si trovano in =~/insert=, che è la
-locazione di /default/, la quale può essere personalizzata impostando
-la variabile =auto-insert-directory=.
+che espanderli. La directory dei template =auto-insert-directory= è
+letta dalla variabile =EMACS_YAS_AUTOINSERT=, oppure rimane quella
+predefinita (il default è =~/insert/=).
 
-#+begin_comment
-Potrei mettere i template nel progetto degli snippets e linkare la
-directory come =~/insert=.
-#+end_comment
+Si possono registrare i template =autoinsert= così:
+#+begin_src emacs-lisp :tangle no
+(define-auto-insert '(org-mode . "Org standard headers") ["org-template.org" lc/autoinsert-yas-expand])
+(define-auto-insert "\\.html$" ["html5-template.html" lc/autoinsert-yas-expand])
+#+end_src
+Nel primo esempio si registra un template in base al /major mode/, con
+una descrizione opzionale. Nel secondo in base al nome del nuovo file.
 
 ** Abbreviazioni
 Qui definisco alcune [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Abbrevs.html][abbrevs]] per inserire rapidamente cose come il
