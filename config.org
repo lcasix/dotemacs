@@ -1446,7 +1446,7 @@ Ecco un riepilgo dei /binding/ usati nei modi di sviluppo:
 | hide all blocks                | =C-c M--=         |
 | show all block                 | =C-c M-+=         |
 |--------------------------------+-------------------|
-| jump to definition / back      | =M-.= / =M-*=     |
+| jump to definition / back      | =M-.= / =M-,=     |
 | navigate symbol's occurences   | =M-p= / =M-n=     |
 | search symbol                  | =M-s _=           |
 | search symbol at point         | =M-s .=           |
@@ -1581,7 +1581,7 @@ efficace.
   (setq dumb-jump-selector 'ivy) ;; use ivy
   :bind (:map dumb-jump-mode-map
               ("M-." . dumb-jump-go)
-              ("M-*" . dumb-jump-back))
+              ("M-," . dumb-jump-back))
   :hook ((sh-mode c-mode c++-mode latex-mode) . dumb-jump-mode))
 #+end_src
 Alcuni /major mode/ hanno il loro sistema di navigazione, quindi l'ho
