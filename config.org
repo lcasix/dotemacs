@@ -834,16 +834,17 @@ Projectile basate su Ivy.
 * Dired
 Il /DIRectory EDitor/ è il file manager integrato in Emacs. Questi
 sono i comandi che uso di più:
-| crea directory                | =+=       |           |
-| copy                          | =C=       |           |
-| move/rename                   | =R=       |           |
-| symlink                       | =S=       |           |
-| permessi (mode)               | =M=       |           |
-| find                          | =F=       |           |
-| comando sul file (sync)       | =!=       |           |
-| comando sul file (async)      | =&=       |           |
-| archivio zip file selezionati | =z=       |           |
-| wedit mode inizio / fine      | =C-x C-q= | =C-c C-c= |
+| crea directory                | =+=         |           |
+| copy                          | =C=         |           |
+| move/rename                   | =R=         |           |
+| symlink                       | =S=         |           |
+| permessi (mode)               | =M=         |           |
+| find                          | =F=         |           |
+| comando sul file (sync)       | =!=         |           |
+| comando sul file (async)      | =&=         |           |
+| archivio zip file selezionati | =z=         |           |
+| attach to mail                | =C-c C-x m= |           |
+| wedit mode inizio / fine      | =C-x C-q=   | =C-c C-c= |
 
 Quando si lanciano i comandi sui file (=!= e =&=) si possono usare i
 segnaposto =*= e =?= per passare i file selezionati come argomenti:
@@ -2160,8 +2161,8 @@ Org. Questa funzionalità è *fondamentale*:
   :after (org notmuch))
 #+end_src
 
-Infine con [[https://github.com/org-mime/org-mime][org-mime]] si possono mandare e-mail HTML a partire dai
-/buffer/ Org. Questo è utile soprattutto quando di devono includere
+Con [[https://github.com/org-mime/org-mime][org-mime]] si possono mandare e-mail HTML a partire dai
+/buffer/ Org. Questo è utile soprattutto quando si devono includere
 nelle mail frammenti di codice o liste, TODO, ecc. La formattazione
 HTML e la sintassi evidenziata rendono la mail molto più leggibile.
 #+begin_src emacs-lisp
@@ -2173,6 +2174,31 @@ HTML e la sintassi evidenziata rendono la mail molto più leggibile.
          :map org-mode-map
               ("C-c M-o" . org-mime-org-subtree-htmlize)
               ))
+#+end_src
+Ho registrato il /binding/ =C-c M-o= in due /mode/:
+- in =message-mode= trasforma in HTML la /region/ in formato Org
+- in =org-mode= crea un'email con il /subtree/ corrente trasformato in
+  HTML; in questo caso si possono impostare delle /property/ come
+  =MAIL_SUBJECT=, =MAIL_TO=, =MAIL_FROM= ecc.
+
+Questa funzione allega i file regolari selezionati in Dired a una
+mail. L'ho presa da [[https://emacs.stackexchange.com/a/33463][qui]]. Il binding è =C-c C-x m=.
+#+begin_src emacs-lisp
+(defun lc/compose-attach-marked-files ()
+  "Compose mail and attach all the marked files from a dired buffer."
+  (interactive)
+  (let ((files (dired-get-marked-files)))
+    (compose-mail-other-window nil nil nil t)
+    (dolist (file files)
+      (if (file-regular-p file)
+          (mml-attach-file file
+                           (mm-default-file-encoding file)
+                           nil "attachment")
+        (message "Skipping non-regular file %s" file)))))
+
+(add-hook 'dired-mode-hook
+          (lambda ()
+            (define-key dired-mode-map (kbd "C-c C-x m") #'lc/compose-attach-marked-files)))
 #+end_src
 
 * PDF Tools
