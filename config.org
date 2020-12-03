@@ -1772,7 +1772,7 @@ python-mode, ma ho configurato elpy.
 	  ))
 #+end_src
 
-** TODO JavaScript                                                      :env:
+** JavaScript                                                           :env:
 Emacs è un grande ambiente per sviluppare in JavaScript. Come /syntax
 checker/ utilizzo [[https://eslint.org/][ESLint]], che va installato preventivamente, per
 esempio con =npm=:
@@ -1799,20 +1799,6 @@ i /fix/ suggeriti da ESLint.
   (add-hook 'js-mode-hook (lambda () (add-hook 'after-save-hook 'eslint-fix nil t))))
 #+end_src
 
-#+begin_comment
-Ho fatto solo il binding per inserire i tag, ma potrei sfruttarlo di
-più. Un'idea potrebbe essere di creare un'espansione di =/**= per
-richiamare la funzione che inserisce la documentazione. 
-#+end_comment
-Il pacchetto [[https://github.com/mooz/js-doc][js-doc]] aiuta a documentare il codice. Lo uso per
-inserire i tag JSDoc.
-#+begin_src emacs-lisp
-(use-package js-doc
-  :ensure t
-  :bind (:map js-mode-map
-              ("@" . js-doc-insert-tag)))
-#+end_src
-
 [[https://ternjs.net/][Tern]] è un motore di analisi del codice JavsScript, che tra le altre
 cose fornisce il l'autocompletamento, suggerisce gli argomenti delle
 funzioni, il refactoring, ecc.
@@ -1829,31 +1815,32 @@ funzioni, il refactoring, ecc.
   (push 'company-tern company-backends))
 #+end_src
 
-Abilito anche il supporto per il Typescript.
+Abilito anche il supporto a TypeScript.
 #+begin_src emacs-lisp
 (use-package typescript-mode :ensure t
   :config
   (add-hook 'typescript-mode-hook (lambda () (add-hook 'after-save-hook 'eslint-fix nil t))))
 #+end_src
 
-#+begin_comment
-Non funziona bene né la REPL di Node né le funzioni di js-doc. Emacs
-si pianta.
-#+end_comment
-Infine il supporto per l'utilizzo interattivo di Node e l'integrazione
-con =js-mode=:
+Il pacchetto [[https://github.com/mooz/js-doc][js-doc]] aiuta a documentare il codice JavaScript in
+formato [[https://jsdoc.app/][JSDoc]]. Quando si scrive un commento basta premere =@= per
+avere un indice dei tag, mentre =C-c i= inserisce la documentazione
+della funzione corrente.
 #+begin_src emacs-lisp
-(use-package nodejs-repl
+(use-package js-doc
   :ensure t
   :after js
-  :config (setq nodejs-repl-command "node")
+  :config
+  (setq js-doc-mail-address user-mail-address
+        js-doc-author (format "%s <%s>" user-full-name js-doc-mail-address)
+        js-doc-url user-site-url)
+  (define-auto-insert '(js-mode . "JSDoc JavaScript header") [js-doc-insert-file-doc])
   :bind (:map js-mode-map
-              ("C-x n e" . nodejs-repl-send-last-sexp)
-              ("C-x n r" . nodejs-repl-send-region)
-              ("C-x n b" . nodejs-repl-send-buffer)
-              ("C-x n f" . nodejs-repl-load-file)
-              ("C-x n z" . nodejs-repl-switch-to-repl)))
+              ("@" . js-doc-insert-tag)
+              ("C-c i" . 'js-doc-insert-function-doc)))
 #+end_src
+Inoltre alla creazione di un nuovo file JavaScript viene inserita la
+documentazione generale (=js-doc-insert-file-doc=).
 
 ** Vue
 Il [[https://github.com/AdamNiederer/vue-mode][vue-mode]] è comodo per sviluppare i componenti di Vue, che uniscono
