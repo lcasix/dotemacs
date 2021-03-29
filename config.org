@@ -104,6 +104,9 @@ mode/ abilita "Open recent" nel menu "File":
 
 ;; enable recent files
 (recentf-mode)
+
+;; type 'y' is enough
+(fset 'yes-or-no-p 'y-or-n-p)
 #+END_SRC
 
 Voglio che il completamento dei nomi file nel minibuffer ignori le
@@ -464,14 +467,17 @@ immediato di una /region/ in un buffer, risparmiando la fase di
 
 Questa piccola funzione copia nel /kill ring/ il path completo al file
 del /buffer/ corrente. Non è tutta farina del mio sacco, ma ho preso
-ispirazione da [[https://stackoverflow.com/a/3669629][qui]].
+ispirazione da [[https://stackoverflow.com/a/3669629][qui]] e [[https://emacsredux.com/blog/2013/03/27/copy-filename-to-the-clipboard/][qui]].
 #+begin_src emacs-lisp
 (defun lc/kill-file-path ()
   "Copy current buffer's full path to kill ring."
   (interactive)
-  (let ((filename (when buffer-file-name (file-truename buffer-file-name))))
-    (if filename (kill-new filename))
-    (message "%s" filename)))
+  (let ((filename (if (equal major-mode 'dired-mode)
+                      default-directory
+                    (buffer-file-name))))
+    (when filename
+      (kill-new filename)
+      (message "%s" filename))))
 (global-set-key (kbd "C-c M-w") 'lc/kill-file-path)
 #+end_src
 
@@ -1327,7 +1333,7 @@ variabile.
 L'/auto saving/ di Emacs non coesiste bene con org-crypt, per cui è
 consigliabile disabilitarlo nei buffer che contengono /entry/ cifrate,
 aggiungendo in cima al documento:
-#+begin_src elisp
+#+begin_src org
 # -*- buffer-auto-save-file-name: nil; -*-
 #+end_src
 
