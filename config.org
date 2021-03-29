@@ -306,6 +306,10 @@ Un riepilogo di funzionalità utili quando si lavora sul testo:
 | prefix each line with /arg/      | =C-x .=   |
 | comment/uncomment line or region | =C-x /=   |
 |----------------------------------+-----------|
+| undo                             | =C-_=     |
+| redo                             | =M-_=     |
+| undo tree                        | =C-x u=   |
+|----------------------------------+-----------|
 | auto completion                  | =M-/=     |
 |----------------------------------+-----------|
 | search                           | =C-s=     |
@@ -469,6 +473,41 @@ ispirazione da [[https://stackoverflow.com/a/3669629][qui]].
     (if filename (kill-new filename))
     (message "%s" filename)))
 (global-set-key (kbd "C-c M-w") 'lc/kill-file-path)
+#+end_src
+
+** Undo & redo
+Il package [[http://www.dr-qubit.org/undo-tree/undo-tree.el][Undo-Tree]] potenzia i comandi di /undo/ con una cronologia,
+i branch e un /diff/ buffer. Inoltre aggiunge un comando per il
+/redo/, che normalmente Emacs non ha.
+
+| function                | binding   |
+|-------------------------+-----------|
+| undo                    | =C-_=     |
+| redo                    | =M-_=     |
+| undo tree               | =C-x u=   |
+| salva nel registro      | =C-x r u= |
+| ripristina dal registro | =C-x r U= |
+
+Nel buffer di /Undo Tree/:
+| function         | binding          |
+|------------------+------------------|
+| applica undo     | =return=         |
+| annulla          | =q=              |
+| switch branch    | =left= / =right= |
+| mostra diff      | =d=              |
+| mostra timestamp | =t=              |
+
+#+begin_src emacs-lisp
+(use-package undo-tree
+  :ensure t
+  :demand t
+  :diminish undo-tree-mode
+  :config
+  (global-undo-tree-mode)
+  (setq undo-tree-visualizer-timestamps t)
+  :bind (:map undo-tree-visualizer-mode-map
+              ("<return>" . undo-tree-visualizer-quit)
+              ("q" . undo-tree-visualizer-abort)))
 #+end_src
 
 ** Search & replace
