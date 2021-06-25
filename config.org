@@ -533,6 +533,7 @@ funzionalità di "search & replace":
 | function          | binding     |
 |-------------------+-------------|
 | jump              | =s-SPC=     |
+| mark ring         | =s-n=       |
 |-------------------+-------------|
 | bookmark position | =C-x P=     |
 | jump to position  | =C-x p=     |
@@ -743,6 +744,7 @@ alcune delle quali vanno a sostituire quelle di default.
    ("C-x C-f" . counsel-find-file)
    ("C-h f" . counsel-describe-function)
    ("C-h v" . counsel-describe-variable)
+   ("s-n" . counsel-mark-ring)
    ("C-h l" . counsel-find-library)
    ("C-h s" . counsel-info-lookup-symbol)
    ("C-h u" . counsel-unicode-char)
@@ -974,6 +976,9 @@ base.
 
   ;; enabling wrap-region
   (add-hook 'org-mode-hook 'wrap-region-mode)
+
+  ;; push mark before jump
+  (advice-add 'counsel-org-goto :before #'push-mark)
 
   ;; babel block native fontification and indentation
   (setq org-src-tab-acts-natively t)
