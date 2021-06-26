@@ -2109,19 +2109,23 @@ Uso Yasnippet in combinazione con =autoinsert=, per popolare con dei
 template i file di nuova creazione (vedi [[http://howardism.org/Technical/Emacs/templates-tutorial.html][qui]]). Quando si crea un nuovo
 file fra quelli definiti con =define-auto-insert=, questo viene
 popolato dal template indicato. Poiché questi template hanno la
-sintassi degli snippet, dopo che =autoinsert= li ha copiati viene
-invocata la funzione =lc/autoinsert-yas-expand=, la quale non fa altro
+sintassi degli snippet, dopo che =autoinsert= li ha copiati si può
+invocare la funzione =lc/autoinsert-yas-expand=, la quale non fa altro
 che espanderli. La directory dei template =auto-insert-directory= è
 letta dalla variabile =EMACS_YAS_AUTOINSERT=, oppure rimane quella
 predefinita (il default è =~/insert/=).
 
-Si possono registrare i template =autoinsert= così:
+Si possono registrare i template =autoinsert= in modo che l'espansione
+avvenga automaticamente:
 #+begin_src emacs-lisp :tangle no
 (define-auto-insert '(org-mode . "Org standard headers") ["org-template.org" lc/autoinsert-yas-expand])
 (define-auto-insert "\\.html$" ["html5-template.html" lc/autoinsert-yas-expand])
 #+end_src
 Nel primo esempio si registra un template in base al /major mode/, con
 una descrizione opzionale. Nel secondo in base al nome del nuovo file.
+
+Io ho registrato i miei template in un file /custom/ (vedi
+[[#id-installazione][Installazione]]).
 
 ** Abbreviazioni
 Qui definisco alcune [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Abbrevs.html][abbrevs]] per inserire rapidamente cose come il
@@ -2485,6 +2489,9 @@ server Emacs come servizio di =systemd=. Con la nuova opzione
 :END:
 
 ** Installazione                                                        :env:
+:PROPERTIES:
+:CUSTOM_ID: id-installazione
+:END:
 Per installare la configurazione è sufficiente una riga come questa da
 mettere nell'=~/.emacs=:
 #+begin_src emacs-lisp
