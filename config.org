@@ -2295,7 +2295,7 @@ Le opzioni passate a =apg=:
   caratteri
 - =-n 10= genera 10 password
 
-La prossima funzone inserisce la data corrente in vari formati. L'ho
+La prossima funzione inserisce la data corrente in vari formati. L'ho
 assegnata a =C-c D=.
 #+begin_src emacs-lisp
 (defun lc/insert-date (prefix)
@@ -2350,7 +2350,7 @@ La finestra di Emacs parte massimizzata per default (vedi [[https://github.com/d
 (set-frame-parameter (selected-frame) 'fullscreen 'maximized)
 #+end_src
 
-Infine imposto il tema. C'è vasta diponibilità, ma a me piace il
+Infine imposto il tema. C'è vasta disponibilità, ma a me piace il
 [[https://github.com/kuanyui/moe-theme.el][moe-theme]] scuro.
 #+begin_src emacs-lisp
 (use-package moe-theme
