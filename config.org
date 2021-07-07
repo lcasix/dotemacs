@@ -1342,13 +1342,26 @@ aggiungendo in cima al documento:
 # -*- buffer-auto-save-file-name: nil; -*-
 #+end_src
 
-** TODO Capture
-#+begin_comment
-Un po' di spiegazioni sulla configurazione del browser e sugli advice
-che vengono registrati. Si vedano i link:
-- http://www.diegoberrocal.com/blog/2015/08/19/org-protocol/
-- https://github.com/sprig/org-capture-extension
-#+end_comment
+** Capture                                                              :env:
+In questa sezione configuro le impostazioni di cattura delle note, sia
+da Emacs che dal browser.
+
+La parte importante sono i /template/ assegnati a
+=org-capture-templates=, che aggiungono le note al file definito dalla
+variabile =EMACS_COMMONPLACE=, con default in =~/commonplace.org=. La
+cattura si innesca con =C-c c= e ho definito i seguenti /template/:
+| key | template                          |
+|-----+-----------------------------------|
+| =t= | Todo: una cosa da fare            |
+| =n= | Nota: appunti e note varie        |
+| =e= | Evento: una nota con luogo e data |
+
+Ci sono due /template/ particolari innescati dall'[[https://github.com/sprig/org-capture-extension][estensione]] per
+Chrome, come descritto [[https://github.com/sprig/org-capture-extension#set-up-handlers-in-emacs][qui]] nella documentazione:
+| key | template                                    |
+|-----+---------------------------------------------|
+| =L= | cattura di un link                          |
+| =p= | cattura di un link con il testo selezionato |
 
 #+begin_src emacs-lisp
 (use-package org-capture
@@ -1356,28 +1369,41 @@ che vengono registrati. Si vedano i link:
   :config
   (require 'org-protocol)
 
-  ;; capture templates
-  (setq org-capture-templates
-        '(
-          ("t" "Task" entry (file+headline org-default-notes-file "Tasks")
-           "* TODO %?\ncreated: %U\n\n%i\nRiferimenti:\n- %a" :empty-lines 1)
-          ("v" "Todo" entry (file+headline org-default-notes-file "Varie")
-           "* TODO %?\ncreated: %U\n\n%i\nRiferimenti:\n- %a" :empty-lines 1)
-          ("n" "Nota" entry (file+headline org-default-notes-file "Note")
-           "* %?\ncreated: %U\n\n%i\nRiferimenti:\n- %a" :empty-lines 1)
-          ("e" "Evento" entry (file+headline org-default-notes-file "Eventi")
-           "* %^{Cosa} %^{Quando}T\n%^{LOCATION}p\n%i\n%?\nRiferimenti:\n- %a" :empty-lines 1)
-          ("L" "Web bookmark" entry (file+headline org-default-notes-file "Captured Links")
-           "* %a\t:bookmark:%?\n:PROPERTIES:\n:CREATED: %U\n:END:\n\n%i\n" :empty-lines 1)
-          ("p" "Protocol" entry (file+headline org-default-notes-file "Captured Links")
-           "* %a\t:bookmark:%?\n:PROPERTIES:\n:CREATED: %U\n:END:\n\n%i\n" :empty-lines 1)
-	))
-
   ;; default capture file
   (setq org-default-notes-file (or (getenv "EMACS_COMMONPLACE") "~/commonplace.org"))
 
+  ;; capture templates
+  (setq org-capture-templates
+        '(
+          ("t" "Todo" entry (file+headline org-default-notes-file "Varie")
+           "* TODO %?\n%i\n\nRiferimenti:\n- %a" :empty-lines 1)
+          ("n" "Nota" entry (file+headline org-default-notes-file "Note")
+           "* %?\n%i\n\nRiferimenti:\n- %a" :empty-lines 1)
+          ("e" "Evento" entry (file+headline org-default-notes-file "Eventi")
+           "* %^{Cosa} %^{Quando}T\n%^{LOCATION}p\n%i\n%?\nRiferimenti:\n- %a" :empty-lines 1)
+          ("L" "Web bookmark" entry (file+headline org-default-notes-file "Captured Links")
+           "* %:description\t:bookmark:
+:PROPERTIES:
+:CREATED: %U
+:END:
+
+%?Riferimenti:
+- %l\n" :empty-lines 1)
+          ("p" "Web bookmark (quote)" entry (file+headline org-default-notes-file "Captured Links")
+           "* %:description\t:bookmark:
+:PROPERTIES:
+:CREATED: %U
+:END:
+
+,#+BEGIN_QUOTE
+%?%i
+,#+END_QUOTE
+
+Riferimenti:
+- %l\n" :empty-lines 1)
+          ))
+
   ;; see http://www.diegoberrocal.com/blog/2015/08/19/org-protocol/
-  ;; see https://github.com/sprig/org-capture-extension
   (defadvice org-capture
       (after make-full-window-frame activate)
     "Advise capture to be the only window when used as a popup"
@@ -1391,6 +1417,12 @@ che vengono registrati. Si vedano i link:
         (delete-frame)))
 )
 #+end_src
+Bisogna attivare =org-protocol=, lo strumento che abilita la cattura
+dalle fonti esterne a Emacs. Gli /advice/ sulle funzioni di cattura
+servono a gestire il frame di /pop-up/ aperto dal browser.
+
+Riferimenti:
+- http://www.diegoberrocal.com/blog/2015/08/19/org-protocol/
 
 ** PlantUML                                                             :env:
 [[https://plantuml.com/][PlantUML]] serve a generare diagrammi UML partendo da un formato
