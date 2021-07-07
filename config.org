@@ -1322,25 +1322,37 @@ delle /entry/ cifrate in un Org file (contrassegnate con il tag
 
 #+begin_src emacs-lisp
 (use-package org-crypt
+  :after org
+  :demand t
   :config
   (org-crypt-use-before-save-magic)
   (add-to-list 'org-tags-exclude-from-inheritance "crypt")
-  (setq org-crypt-key nil)
+  :custom
+  (org-crypt-key nil)
   :bind (:map org-mode-map
               ("C-c M-d" . org-decrypt-entry)))
 #+end_src
+
+La clausola =:demand t= evita il caricamento differito del /package/.
+Infatti la funzione =org-crypt-use-before-save-magic= innesca via
+=org-mode-hook= la cifratura automatica delle /entry/ contrassegnate.
+Se il caricamento del /package/ viene differito, ciò non avverrà per i
+/buffer/ Org già aperti.
 
 Impostando la variabile =org-crypt-key= a =nil= si effettua una
 cifratura con algoritmo simmetrico, per cui verrà chiesta la
 /passphrase/. Per usare una chiave GPG se ne deve assegnare l'ID alla
 variabile.
 
-L'/auto saving/ di Emacs non coesiste bene con org-crypt, per cui è
+L'/auto saving/ di Emacs non coesiste bene con =org-crypt=, per cui è
 consigliabile disabilitarlo nei buffer che contengono /entry/ cifrate,
 aggiungendo in cima al documento:
 #+begin_src org
 # -*- buffer-auto-save-file-name: nil; -*-
 #+end_src
+
+Riferimenti:
+- [[https://orgmode.org/worg/org-tutorials/encrypting-files.html][Encrypting org Files]]
 
 ** Capture                                                              :env:
 In questa sezione configuro le impostazioni di cattura delle note, sia
