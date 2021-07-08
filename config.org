@@ -2576,8 +2576,63 @@ Per avere un'ulteriore opportunità di estensione si prova a caricare
 anche un eventuale =~/.emacs.d/custom-config.el=, destinato alle
 configurazioni strettamente personali e riservate.
 
+** Avvio come servizio
+Un'istanza di Emacs in modalità /server/ può essere avviata come
+servizio utente installando uno /unit file/ =emacs.service= in
+[[~/.config/systemd/user/]]:
+#+begin_src systemd :tangle no
+[Unit]
+Description=GNU Emacs server
+Documentation=info:emacs man:emacs(1) https://gnu.org/software/emacs/
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/emacs --fg-daemon
+ExecStop=/usr/bin/emacsclient --eval "(kill-emacs)"
+Restart=on-failure
+TimeoutStartSec=0
+
+[Install]
+WantedBy=graphical.target
+#+end_src
+
+Lo si può quindi abilitare per l'avvio automatico:
+#+begin_src bash :eval no
+systemctl --user daemon-reload
+systemctl --user enable --now emacs.service
+#+end_src
+
+Tuttavia, per fare in modo che il processo Emacs erediti l'ambiente
+completo dell'utente, preferisco che ad avviarlo sia il /desktop
+manager/. In KDE Plasma basta collocare uno script come questo in
+[[~/.config/autostart/]]:
+#+begin_src sh :eval no :tangle ~/.config/autostart/start-emacs-sever :tangle-mode (identity #o544) :shebang "#!/bin/sh"
+# Questo file è stato estratto da config.org nel progetto dotemacs.
+# Non modificarlo direttamente, ma tramite il file originale.
+
+systemctl --user start emacs.service
+#+end_src
+
+Per estrarre e installare automaticamente questi file dal progetto
+basta [[elisp:(org-babel-tangle)][eseguire il tangle]] (=C-c C-v C-t=).
+
+Si possono ispezionare i log per verificare il corretto avvio del
+servizio:
+#+begin_src bash :eval no
+journalctl --user -u emacs -q --no-pager --since today
+#+end_src
+
+Oppure seguendo i link da Emacs:
+- [[shell:journalctl --user -u emacs -rq --no-pager][log completo]]
+- [[shell:journalctl --user -u emacs -q --no-pager --since today][log di oggi]]
+
+Riferimenti:
+- https://wiki.archlinux.org/title/KDE#Autostart
+- https://wiki.archlinux.org/title/XDG_Autostart
+
 ** Testing
 Per provare la configurazione su una nuova istanza di Emacs:
 #+begin_src sh :eval no
 emacs -q --eval '(org-babel-load-file "~/dev/dotemacs/config.org")'
 #+end_src
+
