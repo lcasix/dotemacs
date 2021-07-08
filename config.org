@@ -132,10 +132,15 @@ cambia il corrispondente file sul disco.
 
 #+END_SRC
 
-I link sono aperti lanciando Chromium.
+I link sono aperti lanciando Chromium, ma uso Firefox per aprire
+Google Meet perché Chromium non supporta la condivisione dello
+schermo. Vedere questo articolo di [[http://www.howardism.org/Technical/Emacs/browsing-in-emacs.html][Howard Abrams]] sul browsing e la
+visita dei link.
 #+begin_src emacs-lisp
-;; default browser
-(setq browse-url-browser-function 'browse-url-chromium)
+;; browser setup
+(setq browse-url-browser-function
+      '(("meet\\.google\\.com" . browse-url-firefox)
+        ("." . browse-url-chromium)))
 #+end_src
 
 Il pacchetto [[https://github.com/myrjola/diminish.el][diminish]] può nascondere i /minor mode/ dalla /modeline/.
