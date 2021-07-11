@@ -1528,6 +1528,119 @@ mode/. Sostituisce Orgstruct, non più mantenuto.
   :ensure t)
 #+end_src
 
+** Contatti
+Qui implemento una semplice gestione dei contatti con Org mode. Esiste
+un =org-contacts= in /Org Contrib/, ma per me è troppo e non è molto
+documentato. Il mio intento non è usare Org come sostituto della
+rubrica, ma registrare informazioni sui clienti e le persone coinvolte
+nei progetti a cui lavoro.
+
+Per i miei scopi un contatto è un /item/ con il tag =contact= e alcune
+/property/:
+- =PHONE=
+- =EMAIL=
+- =NAME=, che contiene cognome e nome (es. =Rossi;Mario=) e può
+  servire per registrare correttamente il contatto in rubrica
+
+Registro queste informazioni nei file /Org/ dei clienti o dei
+progetti, così da averle nel loro contesto. Se sono in
+=org-agenda-files= li posso trovare con una semplice ricerca
+nell'agenda.
+
+Ho definito dei /binding/ per eseguire alcune azioni sui contatti:
+| =C-c M-c c= | QRcode del contatto         |
+| =C-c M-c m= | mail al contatto            |
+| =C-c M-c v= | aggiunge property =COLUMNS= |
+
+La funzione seguente crea una [[https://www.evenx.com/vcard-3-0-format-specification][vCard]] e la mostra come QRcode, utile per
+chiamare con lo smartphone o registrare il contatto nella propria
+rubrica:
+#+begin_src emacs-lisp
+(defun lc/contact-vcard-qr-code ()
+  "Show a QR code for the contact at point.
+Header text is used as the formatted name.
+
+This function try to read the following optional properties:
+- name, the name for filing, eg. Doe;John
+- phone, phone number
+- email, e-mail address"
+  (interactive)
+  (let ((buf (get-buffer-create "*Contact vCard*"))
+        (inhibit-read-only t)
+        (displayname (org-entry-get nil "ITEM"))
+        (contactname (org-entry-get nil "name"))
+        (phone (org-entry-get nil "phone"))
+        (email (org-entry-get nil "email")))
+    (with-current-buffer buf
+        (erase-buffer)
+        (insert "BEGIN:VCARD\n")
+        (insert "VERSION:3.0\n")
+        (if contactname (insert "N:" contactname "\n"))
+        (insert "FN:" displayname "\n")
+        (if phone (insert "TEL:" phone "\n"))
+        (if email (insert "EMAIL:" email "\n"))
+        (insert "END:VCARD\n")
+        (let ((coding-system-for-read 'raw-text))
+          (shell-command-on-region (point-min) (point-max) "qrencode -s 10 -o -" t t))
+        (image-mode)
+        (image-increase-size 5))
+    (switch-to-buffer-other-window buf)))
+#+end_src
+Ho preso ispirazione da [[https://www.emacswiki.org/emacs/QR_Code][questa funzione]] su Emacs Wiki.
+
+Un'altra funzione utile permette di comporre rapidamente un'e-mail
+all'indirizzo del contatto:
+#+begin_src emacs-lisp
+(defun lc/contact-send-mail ()
+  "Send a mail to the contact at point."
+  (interactive)
+  (let ((email (or (org-entry-get nil "email") (error "No email property found")))
+        (name (org-entry-get nil "ITEM")))
+    (compose-mail-other-window (concat name " <" email ">"))
+    (message-goto-subject)))
+#+end_src
+
+Questo è il /template/ per la cattura di un nuovo contatto:
+#+begin_src emacs-lisp
+(push
+ '("c" "Contatto" entry (file+headline org-default-notes-file "Contatti")
+   "* %^{Nome}\t:contact:
+:PROPERTIES:
+:PHONE: %^{Phone}
+:EMAIL: %^{E-mail}
+:NAME:
+:END:
+%?
+
+Riferimenti:
+- %l\n" :empty-lines 1)
+org-capture-templates)
+#+end_src
+
+Questa funzione aggiunge una /property/ =COLUMNS= all'/item/ corrente
+ed è utile se si registrano i contatti in una sezione del file per
+vederli e modificarli in [[info:org#Column View][column view]] (=C-c C-x C-c=).
+#+begin_src emacs-lisp
+(defun lc/contact-add-columns-property ()
+  (interactive)
+  (org-set-property "COLUMNS" "%25item %15phone %40email")
+)
+#+end_src
+
+Qui aggiungo la ricerca dei contatti sull'agenda:
+#+begin_src emacs-lisp
+(push
+ '("nc" "Contatti" tags "+contact")
+ org-agenda-custom-commands)
+#+end_src
+
+Infine la registrazione dei /binding/ in Org mode:
+#+begin_src emacs-lisp
+(bind-key "C-c M-c c" #'lc/contact-vcard-qr-code org-mode-map)
+(bind-key "C-c M-c m" #'lc/contact-send-mail org-mode-map)
+(bind-key "C-c M-c v" #'lc/contact-add-columns-property org-mode-map)
+#+end_src
+
 
 * Sviluppo
 Ecco un riepilgo dei /binding/ usati nei modi di sviluppo:
