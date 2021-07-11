@@ -2218,10 +2218,10 @@ soprattutto ai log di commit."
 #+end_src
 
 
-* Email
+* E-mail
 Gestire le mail con Emacs abilita tutta una serie di workflow
 potentissimi. Ci sono tanti client di posta per Emacs, io ho scelto
-/Not Much/ per la capacità di indicizzazione e la semplicità
+/Notmuch/ per la capacità di indicizzazione e la semplicità
 dell'interfaccia.
 #+begin_src emacs-lisp
 (use-package notmuch
@@ -2242,9 +2242,9 @@ Le seguenti variabili attengono all'invio delle mail:
       mail-envelope-from 'header)
 #+end_src
 Impostando così =send-mail-function= si utilizza il MTA locale
-installato sulla macchina. A beneficio dell'MTA viene impostato
-l'/header/ =from=, così per esempio si può decidere il server SMTP in
-base all'indirizzo del mittente.
+installato sulla macchina. A beneficio dell'MTA viene impostato il
+campo =from= nell'/envelope/, così per esempio si può decidere il
+server SMTP in base all'indirizzo del mittente.
 
 Nell'/editing/ delle mail sono comode le funzioni per le liste di Org.
 #+begin_src emacs-lisp :tangle no
@@ -2560,9 +2560,7 @@ carico la configurazione in questo modo:
 ;; load optional custom config
 (let ((custom (locate-user-emacs-file "custom-config.el")))
   (if (file-exists-p custom)
-      (progn
-        (load-file custom)
-        (message (concat custom " loaded.")))
+      (load-file custom)
     (message (concat "No " custom " found."))))
 #+end_src
 
@@ -2601,12 +2599,17 @@ Lo si può quindi abilitare per l'avvio automatico:
 systemctl --user daemon-reload
 systemctl --user enable --now emacs.service
 #+end_src
+Così tuttavia Emacs non dispone dell'ambiente dell'utente, quindi
+niente variabili, funzioni o altro. Sebbene esistano delle soluzioni
+come il pacchetto [[https://github.com/purcell/exec-path-from-shell][exec-path-from-shell]], queste copiano le variabili da
+un ambiente all'altro.
 
-Tuttavia, per fare in modo che il processo Emacs erediti l'ambiente
-completo dell'utente, preferisco che ad avviarlo sia il /desktop
-manager/. In KDE Plasma basta collocare uno script come questo in
-[[~/.config/autostart/]]:
-#+begin_src sh :eval no :tangle ~/.config/autostart/start-emacs-sever :tangle-mode (identity #o544) :shebang "#!/bin/sh"
+Per fare in modo che il processo Emacs erediti l'ambiente dell'utente
+preferisco che ad avviarlo sia il /desktop manager/. In KDE Plasma
+basta collocare uno script come questo in [[~/.config/autostart-scripts/]]
+e il servizio verrà avviato al login dell'utente ereditandone in modo
+"naturale" l'ambiente completo:
+#+begin_src sh :eval no :tangle ~/.config/autostart-scripts/start-emacs-sever :tangle-mode (identity #o544) :shebang "#!/bin/sh"
 # Questo file è stato estratto da config.org nel progetto dotemacs.
 # Non modificarlo direttamente, ma tramite il file originale.
 
