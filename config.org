@@ -708,7 +708,9 @@ completo.
 | pop view                              | =C-s-_=   |         |
 
 ** Setup di Ivy
-Ivy è un frontend per il completamento dei nomi e non solo. Imprescindibile.
+Ivy è un frontend per il completamento dei nomi e non solo.
+Imprescindibile. Vedi anche il [[https://oremacs.com/swiper/][manuale]] completo.
+
 #+BEGIN_SRC emacs-lisp
 ;; ivy completion setup
 (use-package ivy
@@ -774,33 +776,33 @@ alcune delle quali vanno a sostituire quelle di default.
 qualunque tipo, aggiungendo le tipiche funzionalità di un IDE.
 
 Qui un riepilogo delle funzioni più utili. Per i dettagli c'è il [[https://docs.projectile.mx/][manuale]].
-| functionality                    | custom binding                                              | default binding         |
-|----------------------------------+-------------------------------------------------------------+-------------------------|
-| open file                        | =C-s-f= / =C-s-4 f=                                         | =C-c p f=               |
-| open dir                         | =C-s-d= / =C-s-4 d=                                         | =C-c p d=               |
-| open project                     | =C-s-p=                                                     | =C-c p p=               |
-| switch buffer                    | =C-s-b=                                                     | =C-c p b=               |
-| open root dir                    | =C-s-D=                                                     | =C-c p D=               |
-| open VC                          | =C-s-v=                                                     | =C-c p v=               |
-| save all buffers                 |                                                             | =C-c p S=               |
-| kill all buffers                 |                                                             | =C-c p k=               |
-|----------------------------------+-------------------------------------------------------------+-------------------------|
-| counsel git (find)               | =C-c f=                                                     |                         |
-| counsel git-grep (grep)          | =C-c g=                                                     |                         |
-| counsel ag                       | =C-c k=                                                     |                         |
-| search in project                | =M-s s=                                                     | =C-c p s s=             |
-| search symbol in project         | =M-s .=                                                     |                         |
-| repeat last search               | =C-s-r=                                                     | =C-c C-r=               |
-| replace in project               |                                                             | =C-c p r=               |
-|----------------------------------+-------------------------------------------------------------+-------------------------|
-| shell/async command in proj root | =C-s-!/&=                                                   | =C-c p !/&=             |
-| run eshell/shell/term            | =C-s-x e/s/t=                                               | =C-c p x e/s/t=         |
-| counsel projectile               | =C-s-SPC= / =M-SPC=                                         | =C-c p SPC= / =M-SPC=   |
-| recent file/buffer               | =C-s-LEFT= / =C-s-RIGHT=                                    | =C-c p e= / =C-c p ESC= |
-|----------------------------------+-------------------------------------------------------------+-------------------------|
-| remove project from list         | =M-x projectile-remove-known-project=                       |                         |
-| remove current project from list | =M-x projectile-remove-current-project-from-known-projects= |                         |
-| remove file from project cache   | =M-x projectile-purge-file-from-cache=                      |                         |
+| functionality                    | custom binding                                              | default binding     |
+|----------------------------------+-------------------------------------------------------------+---------------------|
+| open file                        | =C-s-f= / =C-s-4 f=                                         | =s-p f=             |
+| open dir                         | =C-s-d= / =C-s-4 d=                                         | =s-p d=             |
+| open project                     | =C-s-p=                                                     | =s-p p=             |
+| switch buffer                    | =C-s-b=                                                     | =s-p b=             |
+| open root dir                    | =C-s-D=                                                     | =s-p D=             |
+| open VC                          | =C-s-v=                                                     | =s-p v=             |
+| save all buffers                 |                                                             | =s-p S=             |
+| kill all buffers                 |                                                             | =s-p k=             |
+|----------------------------------+-------------------------------------------------------------+---------------------|
+| counsel git (find)               | =C-c f=                                                     |                     |
+| counsel git-grep (grep)          | =C-c g=                                                     |                     |
+| counsel ag                       | =C-c k=                                                     |                     |
+| search in project                | =M-s s=                                                     | =s-p s s=           |
+| search symbol in project         | =M-s .=                                                     |                     |
+| repeat last search               | =C-s-r=                                                     | =C-c C-r=           |
+| replace in project               |                                                             | =s-p r=             |
+|----------------------------------+-------------------------------------------------------------+---------------------|
+| shell/async command in proj root | =C-s-!/&=                                                   | =s-p !/&=           |
+| run eshell/shell/term            | =C-s-x e/s/t=                                               | =s-p x e/s/t=       |
+| counsel projectile               | =C-s-SPC= / =M-SPC=                                         | =s-p SPC= / =M-SPC= |
+| recent file/buffer               | =C-s-LEFT= / =C-s-RIGHT=                                    | =s-p e= / =s-p ESC= |
+|----------------------------------+-------------------------------------------------------------+---------------------|
+| remove project from list         | =M-x projectile-remove-known-project=                       |                     |
+| remove current project from list | =M-x projectile-remove-current-project-from-known-projects= |                     |
+| remove file from project cache   | =M-x projectile-purge-file-from-cache=                      |                     |
 
 ** Setup di Projectile
 :PROPERTIES:
@@ -825,10 +827,11 @@ search args."
     (interactive)
     (counsel-ag (thing-at-point 'symbol) (projectile-project-root)))
   :config
-  (setq projectile-enable-caching t
+  (setq projectile-enable-caching nil
         projectile-completion-system 'ivy
         projectile-switch-project-action #'projectile-find-dir
-        projectile-find-dir-includes-top-level t)
+        projectile-find-dir-includes-top-level t
+        projectile-mode-line-prefix " Prj")
   ;; definizione project types di projectile
   (projectile-register-project-type
    'quasar '("quasar.conf.js")
@@ -863,9 +866,10 @@ Con preveggenza approfondisci la ricerca. Scendi fino alle radici di
 te stesso e lacera come un proiettile l'involucro delle cose. (B.M.)
 #+end_quote
 
-** Counsel per Projectile
-Analogamente a Counsel, =counsel-projectile= aggiunge funzioni a
-Projectile basate su Ivy.
+** Counsel Projectile
+Analogamente a Counsel, [[https://github.com/ericdanan/counsel-projectile][Counsel Projectile]] aggiunge funzioni a
+Projectile basate su Ivy. In particolare permette di eseguire azioni
+supplementari durante il completamento con Ivy tramite =M-o=.
 #+BEGIN_SRC emacs-lisp
 (use-package counsel-projectile
   :ensure t
