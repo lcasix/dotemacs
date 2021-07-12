@@ -1847,18 +1847,6 @@ La variabile =outline-minor-mode-prefix= definisce il prefisso dei
 =outshine-use-speed-commands= attiva gli /speed command/, dei quali si
 può vedere un riepilogo invocando =outshine-speed-command-help=.
 
-** TODO Debugging
-#+begin_comment
-Uso poco il debugger, dare qualche spiegazione. Magari iniziare anche
-a usarlo!
-#+end_comment
-#+begin_src emacs-lisp
-(use-package realgud
-  :ensure t
-  :config
-  (setq realgud-safe-mode nil))
-#+end_src
-
 ** TODO Logging
 #+begin_comment
 Tabella con i /binding/ fondamentali.
@@ -2646,6 +2634,16 @@ server Emacs come servizio di =systemd=. Con la nuova opzione
 	  (lambda () 
 	    (when (file-exists-p pidfile) 
 	      (delete-file pidfile))))
+#+end_src
+
+** Debugging
+Uso poco il debugger, praticamente mai.
+
+#+begin_src emacs-lisp
+(use-package realgud
+  :ensure t
+  :config
+  (setq realgud-safe-mode nil))
 #+end_src
 
 
