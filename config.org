@@ -1847,28 +1847,32 @@ La variabile =outline-minor-mode-prefix= definisce il prefisso dei
 =outshine-use-speed-commands= attiva gli /speed command/, dei quali si
 può vedere un riepilogo invocando =outshine-speed-command-help=.
 
-** TODO Logging
-#+begin_comment
-Tabella con i /binding/ fondamentali.
-#+end_comment
+** Logging
 Visualizzare, muoversi e fare ricerche nei file di log è fondamentale
-e [[https://github.com/doublep/logview][Logiview]] fornisce tutto questo e oltre. È in grado di interpretare
+e [[https://github.com/doublep/logview][Logview]] fornisce tutto questo e oltre. È in grado di interpretare
 di /default/ i formati più comuni (SLF4J per Java, Apache, PHP e
 alcuni =/var/log=), ma se ne possono aggiungere di personalizzati.
+
+| command                          | binding |
+|----------------------------------+---------|
+| filter by name (include/exclude) | =a / A= |
+| filter by thread                 | =t / T= |
+| filter by message                | =m / M= |
+| edit current filters             | =f=     |
+| reset all filters                | =R=     |
 
 #+begin_src emacs-lisp
 (use-package logview
   :ensure t
+  :defer t
   :config
-  (setq logview-additional-submodes
-        '(
-          ;; custom log format Python
-          ("Python custom"
-           (format . "LEVEL - NAME:")
-           (levels . "Python")
-           (timestamp)
-           (aliases)))))
+  ;; disabilita il view-mode, che sovrascrive alcuni binding
+  (add-hook 'logview-mode-hook (lambda () (view-mode 0))))
 #+end_src
+
+Riferimenti:
+- [[https://writequit.org/articles/working-with-logs-in-emacs.html][Working with log files in Emacs]], un articolo che tratta l'argomento
+  in generale, menzionando anche Logview
 
 ** Versioning
 [[https://magit.vc/][Magit]] è l'interfaccia definitiva a Git. Non intendo solo per Emacs, ma
