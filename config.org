@@ -2745,8 +2745,8 @@ journalctl --user -u emacs -q --no-pager --since today
 #+end_src
 
 Oppure seguendo i link da Emacs:
-- [[shell:journalctl --user -u emacs -rq --no-pager][log completo]]
-- [[shell:journalctl --user -u emacs -q --no-pager --since today][log di oggi]]
+- [[shell:LC_ALL=C journalctl --user -u emacs -rq --no-pager][log completo]]
+- [[shell:LC_ALL=C journalctl --user -u emacs -q --no-pager --since today][log di oggi]]
 
 Riferimenti:
 - https://wiki.archlinux.org/title/KDE#Autostart
