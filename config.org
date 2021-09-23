@@ -968,7 +968,7 @@ base.
   :bind
   ;; org-mode global key bindings
   (("C-c l" . org-store-link)
-   ("C-c c" . org-capture)
+   ("C-c c" . counsel-projectile-org-capture)
    ("C-c a" . org-agenda)
    ("C-c L" . org-insert-link-global)
    ("C-c o" . org-open-at-point-global))
