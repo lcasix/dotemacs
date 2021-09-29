@@ -77,8 +77,6 @@ nella variabile =package-list=.
         yaml-mode
         ))
 
-(package-initialize)
-
 (unless package-archive-contents
   (package-refresh-contents))
 
@@ -1042,8 +1040,9 @@ base.
                               (system . "setsid -w xdg-open \"%s\"")
                               )))
 
-  ;; Support link/copy/paste from eww to Org-mode
-  (require 'org-eww)
+  ;; Org links support
+  (require 'ol-eww)
+  (require 'ol-info)
 
   ;; disable <> pairing in Org
   :hook (org-mode . (lambda ()
@@ -2430,7 +2429,7 @@ Infine imposto il tema. C'è vasta disponibilità, ma a me piace il
   :config
   (setq show-paren-style 'mixed)
   ;; powerline and moe-theme styles
-  (moe-theme-set-color 'cyan)
+  (setq moe-theme-mode-line-color 'cyan)
   (moe-dark)
   ;; activate powerline moe theme
   (powerline-moe-theme))
