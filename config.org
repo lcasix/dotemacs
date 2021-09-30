@@ -885,63 +885,6 @@ supplementari durante il completamento con Ivy tramite =M-o=.
 #+END_SRC
 
 
-* Dired
-Il /DIRectory EDitor/ è il file manager integrato in Emacs. Questi
-sono i comandi che uso di più:
-| crea directory                | =+=         |           |
-| copy                          | =C=         |           |
-| move/rename                   | =R=         |           |
-| symlink                       | =S=         |           |
-| permessi (mode)               | =M=         |           |
-| find                          | =F=         |           |
-| comando sul file (sync)       | =!=         |           |
-| comando sul file (async)      | =&=         |           |
-| archivio zip file selezionati | =z=         |           |
-| attach to mail                | =C-c C-x m= |           |
-| wedit mode inizio / fine      | =C-x C-q=   | =C-c C-c= |
-
-Quando si lanciano i comandi sui file (=!= e =&=) si possono usare i
-segnaposto =*= e =?= per passare i file selezionati come argomenti:
-- =*= esegue il comando una sola volta passando come argomenti /tutti/
-  i file selezionati;
-- =?= esegue il comando più volte, una /per ogni/ file selezionato.
-
-La funzione per creare gli archivi /zip/ e il keybinding sono definiti
-qui.
-#+BEGIN_SRC emacs-lisp
-(use-package dired
-  :config
-  (setq dired-recursive-deletes 'always)
-  (defun lc/dired-compress-marked-files (filename)
-    "Create an archive containing che marked files."
-    (interactive "FArchive file name to create: ")
-    (shell-command
-     (concat "zip " filename " "
-             (reduce (lambda(n1 n2) (concat n1 " " n2))
-                     (mapcar 'file-name-nondirectory (dired-get-marked-files))))))
-  :bind (:map dired-mode-map
-              ("z". lc/dired-compress-marked-files)))
-#+END_SRC
-Il valore =always= per la variabile =dired-recursive-deletes= fa in
-modo che Dired elimini le directory ricorsivamente senza chiedere
-conferma.
-
-Uso le estensioni per "nascondere" certi file (/omit mode/) (come le
-directory create da [[https://github.com/gpoore/minted][minted]]) e utilizzarne alcune funzioni.
-#+BEGIN_SRC emacs-lisp
-;; dired extensions setup; see https://www.emacswiki.org/emacs/DiredOmitMode
-(use-package dired-x
-  :after autorevert
-  :config
-  (setq dired-omit-files (concat dired-omit-files "\\|^_minted-"))
-  :bind (:map dired-mode-map
-              ("S" . dired-do-relsymlink)
-              ("F" . find-dired))
-  :hook ((dired-mode . dired-omit-mode)
-         (dired-mode . auto-revert-mode)))
-#+END_SRC
-
-
 * Org Mode
 Org mode è un componente chiave di tutto il mio workflow. In questa
 sezione faccio il setup delle componenti che utilizzo. Alcune
@@ -2323,6 +2266,85 @@ soprattutto ai log di commit."
 
 ;; org mode abbrevs
 (define-abbrev org-mode-abbrev-table "8ref" "" 'lc/reference-list)
+#+end_src
+
+
+* Sistema
+** Dired
+Il /DIRectory EDitor/ è il file manager integrato in Emacs. Questi
+sono i comandi che uso di più:
+| crea directory                | =+=         |           |
+| copy                          | =C=         |           |
+| move/rename                   | =R=         |           |
+| symlink                       | =S=         |           |
+| permessi (mode)               | =M=         |           |
+| find                          | =F=         |           |
+| comando sul file (sync)       | =!=         |           |
+| comando sul file (async)      | =&=         |           |
+| archivio zip file selezionati | =z=         |           |
+| attach to mail                | =C-c C-x m= |           |
+| wedit mode inizio / fine      | =C-x C-q=   | =C-c C-c= |
+
+Quando si lanciano i comandi sui file (=!= e =&=) si possono usare i
+segnaposto =*= e =?= per passare i file selezionati come argomenti:
+- =*= esegue il comando una sola volta passando come argomenti /tutti/
+  i file selezionati;
+- =?= esegue il comando più volte, una /per ogni/ file selezionato.
+
+La funzione per creare gli archivi /zip/ e il keybinding sono definiti
+qui.
+#+BEGIN_SRC emacs-lisp
+(use-package dired
+  :config
+  (setq dired-recursive-deletes 'always)
+  (defun lc/dired-compress-marked-files (filename)
+    "Create an archive containing marked files."
+    (interactive "FArchive file name to create: ")
+    (shell-command
+     (concat "zip " filename " "
+             (reduce (lambda(n1 n2) (concat n1 " " n2))
+                     (mapcar 'file-name-nondirectory (dired-get-marked-files))))))
+  :bind (:map dired-mode-map
+              ("z". lc/dired-compress-marked-files)))
+#+END_SRC
+Il valore =always= per la variabile =dired-recursive-deletes= fa in
+modo che Dired elimini le directory ricorsivamente senza chiedere
+conferma.
+
+Uso le estensioni per "nascondere" certi file (/omit mode/) (come le
+directory create da [[https://github.com/gpoore/minted][minted]]) e utilizzarne alcune funzioni.
+#+BEGIN_SRC emacs-lisp
+;; dired extensions setup; see https://www.emacswiki.org/emacs/DiredOmitMode
+(use-package dired-x
+  :after autorevert
+  :config
+  (setq dired-omit-files (concat dired-omit-files "\\|^_minted-"))
+  :bind (:map dired-mode-map
+              ("S" . dired-do-relsymlink)
+              ("F" . find-dired))
+  :hook ((dired-mode . dired-omit-mode)
+         (dired-mode . auto-revert-mode)))
+#+END_SRC
+
+** Servizi
+Il package [[https://github.com/cbowdon/daemons.el][Daemons]] fornisce un'interfaccia molto semplice, ma comoda,
+per la gestione dei /demoni/ di sistema. Si avvia con il comando
+=daemons= che mostra una lista dei servizi, su cui si può agire con
+dei comandi.
+
+| function     | binding |
+|--------------+---------|
+| status       | =RET=   |
+| start        | =s=     |
+| stop         | =S=     |
+| reload       | =r=     |
+| restart      | =R=     |
+| enable       | =e=     |
+| disable      | =d=     |
+| user daemons | =u=     |
+
+#+begin_src emacs-lisp
+(use-package daemons :ensure t)
 #+end_src
 
 
