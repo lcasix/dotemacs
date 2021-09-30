@@ -192,6 +192,9 @@ disponibili quando servono.
 )
 #+end_src
 
+La variabile =user-mail-address= è impostata automaticamente al valore
+della variabile di ambiente =EMAIL=.
+
 ** Quick calculator
 Avere a disposizione una piccola calcolatrice è utile e comodo in ogni
 circostanza.
@@ -290,7 +293,7 @@ anche evidenziare le coppie di parentesi corrispondenti.
 
 I comandi che operano sulle frasi seguono la convenzione americana di
 considerarne la fine quando il punto è seguito da due spazi. Poiché
-gli americani fanno molto uso dele abbreviazioni, questo serve a
+gli americani fanno molto uso delle abbreviazioni, questo serve a
 distinguerle dalla fine della frase. Io non uso molte abbreviazioni,
 quindi per me la frase finisce con un punto seguito da un solo spazio.
 #+begin_src emacs-lisp
@@ -606,7 +609,7 @@ del /word wrap/, ma non lo disabilita alla disattivazione. Inoltre il
 /word wrap/ è inutile con l'/auto fill/. Così ho scritto la funzione
 =lc/visual-line-mode= per fare il /toggle/ di tutti.
 
-Il /packege/ [[https://github.com/purcell/unfill][unfill]] esegue l'operazione inversa di =fill-paragraph=,
+Il /package/ [[https://github.com/purcell/unfill][unfill]] esegue l'operazione inversa di =fill-paragraph=,
 cioè riporta un paragrafo su una sola riga di testo dopo che ne è
 stato fatto l'/hard wrap/.
 #+begin_src emacs-lisp
@@ -706,7 +709,7 @@ completo.
 | pop view                              | =C-s-_=   |         |
 
 ** Setup di Ivy
-Ivy è un frontend per il completamento dei nomi e non solo.
+Ivy è un front-end per il completamento dei nomi e non solo.
 Imprescindibile. Vedi anche il [[https://oremacs.com/swiper/][manuale]] completo.
 
 #+BEGIN_SRC emacs-lisp
@@ -1589,7 +1592,7 @@ Infine la registrazione dei /binding/ in Org mode:
 
 
 * Sviluppo
-Ecco un riepilgo dei /binding/ usati nei modi di sviluppo:
+Ecco un riepilogo dei /binding/ usati nei modi di sviluppo:
 | function                       | binding           |
 |--------------------------------+-------------------|
 | indent region                  | =C-M-\=           |
@@ -1721,7 +1724,7 @@ così se ne può scegliere velocemente uno con =M= (ALT) e il numero. Il
 Un paio di pacchetti aggiungono delle estensioni
 utili. =company-quickhelp= mostra un pop-up con la documentazione
 quando ci si sofferma su un candidato. =company-shell= fornisce
-beckend di completamento con i binary nel =$PATH= e le variabili di
+back-end di completamento con i binary nel =$PATH= e le variabili di
 ambiente.
 
 ** Navigazione
