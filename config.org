@@ -1279,7 +1279,7 @@ delle /entry/ cifrate in un Org file (contrassegnate con il tag
   (org-crypt-use-before-save-magic)
   (add-to-list 'org-tags-exclude-from-inheritance "crypt")
   :custom
-  (org-crypt-key nil)
+  (org-crypt-key (format "%s <%s>" user-full-name user-mail-address))
   :bind (:map org-mode-map
               ("C-c M-d" . org-decrypt-entry)))
 #+end_src
@@ -1292,8 +1292,8 @@ Se il caricamento del /package/ viene differito, ciò non avverrà per i
 
 Impostando la variabile =org-crypt-key= a =nil= si effettua una
 cifratura con algoritmo simmetrico, per cui verrà chiesta la
-/passphrase/. Per usare una chiave GPG se ne deve assegnare l'ID alla
-variabile.
+/passphrase/. Una stringa invece viene cercata fra le chiavi
+disponibili e usata per cifrare la /entry/.
 
 L'/auto saving/ di Emacs non coesiste bene con =org-crypt=, per cui è
 consigliabile disabilitarlo nei buffer che contengono /entry/ cifrate,
