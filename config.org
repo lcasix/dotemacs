@@ -2276,17 +2276,31 @@ soprattutto ai log di commit."
 ** Dired
 Il /DIRectory EDitor/ è il file manager integrato in Emacs. Questi
 sono i comandi che uso di più:
-| crea directory                | =+=         |           |
-| copy                          | =C=         |           |
-| move/rename                   | =R=         |           |
-| symlink                       | =S=         |           |
-| permessi (mode)               | =M=         |           |
-| find                          | =F=         |           |
-| comando sul file (sync)       | =!=         |           |
-| comando sul file (async)      | =&=         |           |
-| archivio zip file selezionati | =z=         |           |
-| attach to mail                | =C-c C-x m= |           |
-| wedit mode inizio / fine      | =C-x C-q=   | =C-c C-c= |
+| function                                  | binding     |           |
+|-------------------------------------------+-------------+-----------|
+| crea directory                            | =+=         |           |
+| copy                                      | =C=         |           |
+| move/rename                               | =R=         |           |
+| symlink                                   | =S=         |           |
+| permessi (mode)                           | =M=         |           |
+| find                                      | =F=         |           |
+| comando sul file (sync)                   | =!=         |           |
+| comando sul file (async)                  | =&=         |           |
+| archivio zip file selezionati             | =z=         |           |
+| merge PDF selezionati                     | =M-m=       |           |
+| attach to mail                            | =C-c C-x m= |           |
+| wedit mode inizio / fine                  | =C-x C-q=   | =C-c C-c= |
+|-------------------------------------------+-------------+-----------|
+| flag backup files                         | =~=         |           |
+| flag auto save files                      | =#=         |           |
+| mark all files                            | =* s=       |           |
+| mark by regexp (name)                     | =% m=       |           |
+| mark by regexp (content)                  | =% g=       |           |
+|-------------------------------------------+-------------+-----------|
+| aggiorna riga                             | =l=         |           |
+| elimina riga (non il file)                | =k=         |           |
+| ordinamento alfabetico o per data         | =s=         |           |
+| opzioni di ordinamento (es. =-S= by size) | =c-u s=     |           |
 
 Quando si lanciano i comandi sui file (=!= e =&=) si possono usare i
 segnaposto =*= e =?= per passare i file selezionati come argomenti:
@@ -2298,8 +2312,10 @@ La funzione per creare gli archivi /zip/ e il keybinding sono definiti
 qui.
 #+BEGIN_SRC emacs-lisp
 (use-package dired
+  :custom
+  (dired-listing-switches "-alh")
+  (dired-recursive-deletes 'always)
   :config
-  (setq dired-recursive-deletes 'always)
   (defun lc/dired-compress-marked-files (filename)
     "Create an archive containing marked files."
     (interactive "FArchive file name to create: ")
@@ -2310,9 +2326,10 @@ qui.
   :bind (:map dired-mode-map
               ("z". lc/dired-compress-marked-files)))
 #+END_SRC
-Il valore =always= per la variabile =dired-recursive-deletes= fa in
-modo che Dired elimini le directory ricorsivamente senza chiedere
-conferma.
+- lo switch =-h= aggiunto a =dired-listing-switches= mostra le
+  dimensioni dei file in formato /human readable/
+- =dired-recursive-deletes= a =always= fa in modo che Dired elimini
+  le directory ricorsivamente senza chiedere conferma
 
 Uso le estensioni per "nascondere" certi file (/omit mode/) (come le
 directory create da [[https://github.com/gpoore/minted][minted]]) e utilizzarne alcune funzioni.
