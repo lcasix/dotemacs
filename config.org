@@ -975,15 +975,14 @@ base.
 
   ;; apps for opening attachments
   (setq org-file-apps (quote ((auto-mode . emacs)
+                              (directory . emacs)
                               ("\\.jpe?g\\'" . system)
                               ("\\.png\\'" . system)
                               ("\\.x?html?\\'" . system)
                               ("\\.pdf\\'" . system)
                               ("\\.docx?\\'" . system)
                               ("\\.odt\\|\\.ods\\'" . system)
-                              ;; setsid è un workaround per far funzionare xdg-open
-                              ;; vedi https://askubuntu.com/a/675366
-                              (system . "setsid -w xdg-open \"%s\"")
+                              (system . "xdg-open \"%s\"")
                               )))
 
   ;; Org links support
