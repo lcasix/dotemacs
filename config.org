@@ -2324,7 +2324,8 @@ qui.
              (reduce (lambda(n1 n2) (concat n1 " " n2))
                      (mapcar 'file-name-nondirectory (dired-get-marked-files))))))
   :bind (:map dired-mode-map
-              ("z". lc/dired-compress-marked-files)))
+              ("z". lc/dired-compress-marked-files)
+              ("M-m" . lc/dired-merge-marked-pdf-files)))
 #+END_SRC
 - lo switch =-h= aggiunto a =dired-listing-switches= mostra le
   dimensioni dei file in formato /human readable/
@@ -2379,6 +2380,85 @@ sostituire il /DocView/ standard di Emacs.
   :bind (:map pdf-view-mode-map
               ("C-s" . isearch-forward)))
 #+end_src
+
+** Scanner
+Il pacchetto [[https://gitlab.com/rstocker/scanner][scanner]] fornisce un'interfaccia a SANE e [[https://github.com/tesseract-ocr/tesseract][Tesseract]] per
+l'acquisizione dei documenti.
+
+Non ho fatto /binding/ perché le scansioni che eseguo sono saltuarie.
+Qui riepilogo le funzioni più usate:
+| operazione                               | funzione                    |
+|------------------------------------------+-----------------------------|
+| scansione documento                      | =scanner-scan-document=     |
+| multi pagina interattiva (con richiesta) | =C-u scanner-scan-document= |
+| multi pagina automatica (es. 5 pagine)   | =C-5 scanner-scan-document= |
+| scansione immagine                       | =scanner-scan-image=        |
+|------------------------------------------+-----------------------------|
+| selezione formato carta                  | =scanner-select-papersize=  |
+| selezione formati da produrre            | =scanner-select-outputs=    |
+
+Nella scansione automatica l'attesa fra una pagina e l'altra è
+definita dalla variabile =scanner-scan-delay=, il cui /default/ è 3
+secondi.
+
+Il pacchetto /scanner/ fa uso di alcuni comandi che è necessario
+installare:
+#+begin_src bash :eval no
+sudo apt install sane-utils tesseract-ocr tesseract-ocr-{eng,ita}
+#+end_src
+
+Configuro il pacchetto con i percorsi ai dati di Tesseract, i formati
+dei fogli, le modalità di scansione (scala di grigio o colori), le
+lingue riconosciute e i formati da produrre. Vengono inoltre
+aggiustati luminosità e contrasto.
+#+begin_src emacs-lisp
+(use-package scanner
+  :ensure t
+  :custom
+  (scanner-paper-sizes '(:a4 (210 297) :a5 (210 148) :a6 (105 148)))
+  (scanner-scan-mode '(:image "Color" :doc "Gray"))
+  (scanner-tesseract-languages '("ita" "eng"))
+  (scanner-tesseract-outputs '("pdf"))
+  (scanner-scanimage-switches '("--brightness" "-15" "--contrast" "15"))
+  (scanner-tessdata-dir "/usr/share/tesseract-ocr/4.00/tessdata/")
+  (scanner-tessdata-configdir "/usr/share/tesseract-ocr/4.00/tessdata/configs"))
+#+end_src
+
+Un'operazione che mi trovo a fare spesso dopo le scansioni è il
+/merge/ di più documenti PDF, per esempio una bolletta con la ricevuta
+di pagamento. [[https://www.pdflabs.com/tools/pdftk-the-pdf-toolkit/][PDF Toolkit]] è una utility per manipolare i PDF e la si
+può installare con:
+#+begin_src bash :eval no
+sudo apt install pdftk
+#+end_src
+
+La funzione seguente fa il /merge/ dei file marcati in Dired.
+L'ordinamento è importante perché i file vengono uniti nell'ordine in
+cui sono elencati nel buffer. Il primo file viene sostituito con il
+risultato dell'operazione, mentre gli altri sono elimiminati. Con lo
+/universal argument/ (=C-u=) viene chiesta conferma prima di
+eliminare.
+#+begin_src emacs-lisp
+(defun lc/dired-merge-marked-pdf-files (arg)
+  "Merge marked files, delete original files and replace the first with the result.
+With prefix-argument, ask confirmation before deletion."
+  (interactive "P")
+  (when (not (executable-find "pdftk")) (error "pdftk executable not found."))
+
+  (let ((firstname (nth 0 (dired-get-marked-files)))
+        (temp (make-temp-file "pdfmerge-"))
+        (dired-deletion-confirmer (if arg #'y-or-n-p #'identity)))
+    (when (= 0
+             (call-process-shell-command
+              (concat "pdftk "
+                      (mapconcat #'identity (dired-get-marked-files "no-dir") " ")
+                      " cat output " temp " verbose")
+              nil "*PDF merge*"))
+      (dired-do-delete)
+      (rename-file temp firstname t)
+      (message (concat "File " firstname " produced.")))))
+#+end_src
+
 
 * Utility
 Qui ho definito alcune piccole funzioni utili a inserire rapidamente
