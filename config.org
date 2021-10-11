@@ -1537,14 +1537,20 @@ This function try to read the following optional properties:
 Ho preso ispirazione da [[https://www.emacswiki.org/emacs/QR_Code][questa funzione]] su Emacs Wiki.
 
 Un'altra funzione utile permette di comporre rapidamente un'e-mail
-all'indirizzo del contatto:
+all'indirizzo del contatto. Si può impostare una /property/ =mail-tags= (es. +lavoro
++progetto), anche ereditata, con i tag da assegnare alla mail.
 #+begin_src emacs-lisp
 (defun lc/contact-send-mail ()
-  "Send a mail to the contact at point."
+  "Send a mail to the contact at point. Read tags from mail-tags
+property."
   (interactive)
-  (let ((email (or (org-entry-get nil "email") (error "No email property found")))
-        (name (org-entry-get nil "ITEM")))
+  (let ((email (or (org-entry-get nil "email") (error "No email property found.")))
+        (name (org-entry-get nil "ITEM"))
+        (tags (org-entry-get-with-inheritance "mail-tags")))
     (compose-mail-other-window (concat name " <" email ">"))
+    (when tags
+      (message-goto-fcc)
+      (insert " " tags))
     (message-goto-subject)))
 #+end_src
 
@@ -1571,7 +1577,7 @@ vederli e modificarli in [[info:org#Column View][column view]] (=C-c C-x C-c=).
 #+begin_src emacs-lisp
 (defun lc/contact-add-columns-property ()
   (interactive)
-  (org-set-property "COLUMNS" "%25item %15phone %40email")
+  (org-set-property "COLUMNS" "%25item(name) %15phone %40email")
 )
 #+end_src
 
