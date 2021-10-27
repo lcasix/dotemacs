@@ -533,6 +533,8 @@ funzionalità di "search & replace":
 #+begin_src emacs-lisp
 (use-package visual-regexp
   :ensure t
+  :custom
+  (vr/engine 'emacs)
   :bind ([remap query-replace] . vr/query-replace))
 
 (use-package visual-regexp-steroids
