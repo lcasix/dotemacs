@@ -926,7 +926,9 @@ base.
   ;; custom keybindings
   (:map org-mode-map
         ("C-c C-x g" . grep)
-        ("M-N" . counsel-org-goto))
+        ("M-N" . counsel-org-goto)
+        ("M-n" . org-next-link)
+        ("M-p" . org-previous-link))
 
   :config
   (require 'org-id)
