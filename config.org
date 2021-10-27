@@ -1666,9 +1666,12 @@ sotto il /point/ e abilita la "navigazione" fra le occorrenze con
   :ensure t
   :config
   (setq highlight-symbol-idle-delay 1.0)
-  :hook ((prog-mode . highlight-symbol-mode)
-         (prog-mode . highlight-symbol-nav-mode)))
+  :hook ((prog-mode . highlight-symbol-nav-mode)))
 #+end_src
+L'evidenza dei simboli generalmente viene fatta da =lsp-mode=, ma in
+caso servisse basta aggiungere agli =:hook= l'associazione =(prog-mode
+. highlight-symbol-mode)= o attivare manualmente il
+=highlight-symbol-mode=.
 
 Alcuni binding utili durante l'editing del codice:
 #+begin_src emacs-lisp
