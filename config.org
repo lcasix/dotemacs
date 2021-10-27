@@ -15,6 +15,9 @@
 #+OPTIONS: email:nil f:t inline:t num:t p:nil pri:nil prop:nil stat:t
 #+OPTIONS: tags:t tasks:t tex:t timestamp:t title:t toc:t todo:t |:t
 
+#+CATEGORY: dotemacs
+#+FILETAGS: project
+
 #+STARTUP: content
 
 
