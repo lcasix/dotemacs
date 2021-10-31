@@ -2384,11 +2384,12 @@ qui.
     (interactive "FArchive file name to create: ")
     (shell-command
      (concat "zip " filename " "
-             (reduce (lambda(n1 n2) (concat n1 " " n2))
-                     (mapcar 'file-name-nondirectory (dired-get-marked-files))))))
+             (mapconcat #'identity (dired-get-marked-files "no-dir") " "))))
   :bind (:map dired-mode-map
+              ("F" . find-dired)
               ("z". lc/dired-compress-marked-files)
-              ("M-m" . lc/dired-merge-marked-pdf-files)))
+              ("M-m" . lc/dired-merge-marked-pdf-files))
+  :hook (dired-mode . auto-revert-mode))
 #+END_SRC
 - lo switch =-h= aggiunto a =dired-listing-switches= mostra le
   dimensioni dei file in formato /human readable/
@@ -2404,10 +2405,8 @@ directory create da [[https://github.com/gpoore/minted][minted]]) e utilizzarne 
   :config
   (setq dired-omit-files (concat dired-omit-files "\\|^_minted-"))
   :bind (:map dired-mode-map
-              ("S" . dired-do-relsymlink)
-              ("F" . find-dired))
-  :hook ((dired-mode . dired-omit-mode)
-         (dired-mode . auto-revert-mode)))
+              ([remap dired-do-symlink] . dired-do-relsymlink))
+  :hook (dired-mode . dired-omit-mode))
 #+END_SRC
 
 ** Servizi
