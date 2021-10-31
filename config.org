@@ -360,7 +360,6 @@ generale, nonché alcune versioni migliorate di quelle standard.
   :config
   (global-set-key [remap move-beginning-of-line] #'crux-move-beginning-of-line)
   (global-set-key [remap kill-line] #'crux-smart-kill-line)
-  (crux-reopen-as-root-mode t)
   :bind
   (("S-<return>" . crux-smart-open-line)
    ("M-S-<return>" . crux-smart-open-line-above)
@@ -1905,6 +1904,42 @@ sviluppo web!
   :bind (("C-c C-l" . lorem-ipsum-insert-paragraphs)))
 #+end_src
 
+** LSP mode
+LSP è un protocollo di comunicazione fra un client (editor o IDE) e un
+/language server/ che fornisce funzionalità avanzate per lo sviluppo
+come autocompletamento o ricerca dei simboli. [[https://emacs-lsp.github.io/lsp-mode/][LSP mode]] è un client LSP
+per Emacs e permette di utilizzare i /language server/ di moltissimi
+linguaggi, trasformando Emacs in un IDE universale.
+
+I [[https://emacs-lsp.github.io/lsp-mode/page/keybindings/][comandi]] sono organizzati in gruppi, che si attivano col prefisso
+=s-l=.
+
+#+begin_src emacs-lisp
+(use-package lsp-mode
+  :ensure t
+  :custom
+  (lsp-keymap-prefix "s-l")
+  :hook
+  ((php-mode . lsp)
+   (lsp-mode . lsp-enable-which-key-integration))
+  :commands lsp)
+
+(use-package lsp-ui
+  :ensure t
+  :bind (:map lsp-mode-map
+              ("M-." . #'lsp-ui-peek-find-definitions)
+              )
+  :commands lsp-ui-mode)
+
+(use-package lsp-ivy
+  :ensure t
+  :commands lsp-ivy-workspace-symbol)
+#+end_src
+
+Quando viene invocato su un nuovo linguaggio, =lsp-mode= chiede
+automaticamente un server da installare, altrimenti si può invocare
+manualmente la procedura con =lsp-install-server=.
+
 ** TODO Python
 [[https://github.com/jorgenschaefer/elpy][Elpy]] è un /major mode/ per Python molto completo.
 #+begin_src emacs-lisp
@@ -2124,6 +2159,28 @@ Infine un po' di autocompletamento per HTML, Bootstrap, ecc.
               (company-web-bootstrap+)
               (company-web-fa+))))
 #+end_src
+
+** Php
+Abilito [[https://github.com/emacs-php/php-mode][Php mode]] per l'editing:
+#+begin_src emacs-lisp
+(use-package php-mode :ensure t)
+#+end_src
+
+Flycheck e gli altri strumenti necessitano di un eseguibile Php e del
+Composer:
+#+begin_src bash :eval no
+sudo apt install php7.4-cli php7.4-curl php7.4-mbstring php7.4-dom
+cd /tmp
+wget -O composer-setup.php https://getcomposer.org/installer
+sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+#+end_src
+
+Le funzionalità di IDE sono fornite da LSP. Ho installato il server
+[[https://emacs-lsp.github.io/lsp-mode/page/lsp-intelephense/][Intelephsense]] (=iph=).
+
+Riferimenti:
+- [[https://noviello.it/come-installare-e-utilizzare-php-composer-su-debian-11/][Installare Php Composer su Debian 11]]
+- [[https://linuxize.com/post/how-to-install-and-use-composer-on-debian-10/][How to install Composer on Debian 10]]
 
 ** Restclient
 [[https://github.com/pashky/restclient.el][Restclient]] è uno strumento fantastico per invocare /webservice/ da
