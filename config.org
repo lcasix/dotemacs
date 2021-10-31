@@ -1751,27 +1751,6 @@ quando ci si sofferma su un candidato. =company-shell= fornisce
 back-end di completamento con i binary nel =$PATH= e le variabili di
 ambiente.
 
-** Navigazione
-[[https://github.com/jacktasia/dumb-jump][Dumb jump]] permette di navigare fra le definizioni effettuando una
-semplice ricerca testuale sulla /code base/, risultato così semplice e
-leggero, senza richiedere la costruzione di indici (TAGS) o processi
-in /background/. Pur con tutti i suoi limiti è abbastanza veloce ed
-efficace.
-#+begin_src emacs-lisp
-(use-package dumb-jump
-  :ensure t
-  :after ivy
-  :config
-  (advice-add 'dumb-jump-go :before #'push-mark) ;; push mark before jump
-  (setq dumb-jump-selector 'ivy) ;; use ivy
-  :bind (:map dumb-jump-mode-map
-              ("M-." . dumb-jump-go)
-              ("M-," . dumb-jump-back))
-  :hook ((sh-mode c-mode c++-mode latex-mode) . dumb-jump-mode))
-#+end_src
-Alcuni /major mode/ hanno il loro sistema di navigazione, quindi l'ho
-associato solo ad alcuni linguaggi.
-
 ** Syntax checking
 Così come l'[[*Autocompletamento][autocompletamento]], anche il /syntax checking/ è un
 elemento indispensabile per lo sviluppo di qualunque software e
@@ -2754,6 +2733,29 @@ server Emacs come servizio di =systemd=. Con la nuova opzione
 	    (when (file-exists-p pidfile) 
 	      (delete-file pidfile))))
 #+end_src
+
+** Navigazione
+Sembra che dumb-jump sia obsoleto in favore di xref.
+
+[[https://github.com/jacktasia/dumb-jump][Dumb jump]] permette di navigare fra le definizioni effettuando una
+semplice ricerca testuale sulla /code base/, risultato così semplice e
+leggero, senza richiedere la costruzione di indici (TAGS) o processi
+in /background/. Pur con tutti i suoi limiti è abbastanza veloce ed
+efficace.
+#+begin_src emacs-lisp
+(use-package dumb-jump
+  :ensure t
+  :after ivy
+  :config
+  (advice-add 'dumb-jump-go :before #'push-mark) ;; push mark before jump
+  (setq dumb-jump-selector 'ivy) ;; use ivy
+  :bind (:map dumb-jump-mode-map
+              ("M-." . dumb-jump-go)
+              ("M-," . dumb-jump-back))
+  :hook ((sh-mode c-mode c++-mode latex-mode) . dumb-jump-mode))
+#+end_src
+Alcuni /major mode/ hanno il loro sistema di navigazione, quindi l'ho
+associato solo ad alcuni linguaggi.
 
 ** Debugging
 Uso poco il debugger, praticamente mai.
