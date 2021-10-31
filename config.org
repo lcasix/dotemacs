@@ -1003,15 +1003,23 @@ base.
                `(lambda (c)
                   (if (char-equal c ?<) t (,electric-pair-inhibit-predicate c))))))
   )
-
-;; enabling easy templates
-(use-package org-tempo
-  :after org)
 #+end_src
 
 Una delle cose che mi infastidisce in Org mode è il /pairing/ delle
 parentesi angolari (=<>=), perché non mi serve e intralcia l'uso degli
 /smart template/.
+
+Qui abilito gli smart template di Org, che permettono di inserire
+blocchi BEGIN...END velocemente con sequenze del tipo =<s= + =TAB=.
+#+begin_src emacs-lisp
+(use-package org-tempo
+  :after org
+  :config
+  (push '("n" . "note") org-structure-template-alist))
+#+end_src
+Aggiungo un blocco BEGIN_NOTE che uso soprattutto per l'esportazione
+in EPUB.
+
 
 ** Agenda                                                               :env:
 L'agenda è una parte fondamentale. Permette sia di creare riepiloghi
