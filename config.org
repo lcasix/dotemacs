@@ -1010,16 +1010,15 @@ parentesi angolari (=<>=), perché non mi serve e intralcia l'uso degli
 /smart template/.
 
 Qui abilito gli smart template di Org, che permettono di inserire
-blocchi BEGIN...END velocemente con sequenze del tipo =<s= + =TAB=.
+blocchi =BEGIN...END= velocemente.
 #+begin_src emacs-lisp
 (use-package org-tempo
   :after org
   :config
   (push '("n" . "note") org-structure-template-alist))
 #+end_src
-Aggiungo un blocco BEGIN_NOTE che uso soprattutto per l'esportazione
+Aggiungo un blocco =BEGIN_NOTE= che uso soprattutto per l'esportazione
 in EPUB.
-
 
 ** Agenda                                                               :env:
 L'agenda è una parte fondamentale. Permette sia di creare riepiloghi
@@ -2440,6 +2439,16 @@ sostituire il /DocView/ standard di Emacs.
   (pdf-tools-install)
   :bind (:map pdf-view-mode-map
               ("C-s" . isearch-forward)))
+#+end_src
+
+** Epub
+[[https://depp.brause.cc/nov.el/][nov.el]] è un major mode per leggere e-book in formato EPUB su Emacs.
+#+begin_src emacs-lisp
+(use-package nov
+  :ensure t
+  :mode ("\\.epub\\'" . nov-mode)
+  :custom
+  (nov-text-width 65))
 #+end_src
 
 ** Scanner
