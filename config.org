@@ -152,6 +152,9 @@ Il pacchetto [[https://github.com/myrjola/diminish.el][diminish]] può nasconder
 #+end_src
 
 ** Scratch buffer
+:PROPERTIES:
+:CUSTOM_ID: id-scratch-buffer
+:END:
 Il pacchetto =scratch= crea rapidamente degli /scratch buffer/ simili
 a quello di default per /elisp/, ma con lo stesso /major mode/ che si
 sta utilizzando.
@@ -2214,6 +2217,69 @@ connettersi ai /container/ via Tramp.
 (use-package docker-compose-mode :ensure t)
 (use-package docker-tramp :ensure t)
 #+end_src
+
+** SQL
+Emacs offre numerose funzionalità per interagire con i database. Una
+di queste è la possibilità di aprire una console interattiva (SQLi)
+per impartire istruzioni SQL. Queste console si aprono con comandi
+come =sql-postgres=, =sql-mysql=, =sql-mariadb=, le quali richiedono
+interattivamente i parametri di connessione.
+
+Le connessioni si possono configurare in modo permanente aggiungendo i
+parametri alla variabile =sql-connection-alist=, per esempio:
+#+begin_src emacs-lisp :tangle no
+(setq sql-connection-alist
+      '((appdb (sql-product 'postgres)
+               (sql-server "db.prod.com")
+               (sql-port 5432)
+               (sql-user "user")
+               (sql-password "password")
+               (sql-database "my-app"))))
+#+end_src
+Oppure in =.dir-locals.el= per singolo progetto:
+#+begin_src emacs-lisp :tangle no
+((nil . ((sql-connection-alist . ((appdb (sql-product 'mariadb)
+                                         (sql-server "localhost")
+                                         (sql-port 3306)
+                                         (sql-user "user")
+                                         (sql-password "password")
+                                         (sql-database "myapp")))
+                               ))))
+#+end_src
+A questo punto si può usare =sql-connect= e scegliere un database fra
+quelli configurati.
+
+Un'altra funzionalità utile è la possibilità di associare un buffer in
+=sql-mode= a una console aperta, per poter inviare le istruzioni SQL
+nel buffer direttamente al database. L'associazione di un buffer SQL
+si effettua con =sql-set-sqli-buffer= (=C-c C-s= nei miei binding), la
+quale chiede di scegliere fra le console SQLi correntemente aperte.
+Una volta associato il buffer si possono inviare le istruzioni con:
+- =C-c C-c=, esegue la query corrente
+- =C-c C-n=, esegue la riga corrente
+- =C-c C-r=, esegue la region
+- =C-c C-b=, esegue l'intero buffer
+
+Una cosa che faccio spesso è creare un buffer SQL temporaneo con =C-u
+C-c s sql= (vedi [[#id-scratch-buffer][Scratch buffer]]) e poi associarlo con =C-c C-s=. Si
+può sempre salvare il buffer con =C-x C-w=.
+
+#+begin_src emacs-lisp
+(use-package sql
+  :config
+  (add-hook 'sql-interactive-mode-hook
+            (lambda ()
+              (toggle-truncate-lines t)))
+  :bind (:map sql-mode-map
+              ("C-c C-s" . sql-set-sqli-buffer)))
+#+end_src
+Configuro il =sql-interactive-mode= in modo che le linee non vengano
+troncate, così è più facile leggere i risultati delle query.
+
+Riferimenti:
+- [[https://emacsredux.com/blog/2013/06/13/using-emacs-as-a-database-client/][Using Emacs as a Database Client]]
+- [[https://truongtx.me/2014/08/23/setup-emacs-as-an-sql-database-client][Setup Emacs as an SQL Database client]]
+- [[https://www.orgmode.org/worg/org-contrib/babel/languages/ob-doc-sql.html][SQL Source Code Blocks in Org Mode]]
 
 
 * Templating
