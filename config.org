@@ -1624,6 +1624,7 @@ Ecco un riepilogo dei /binding/ usati nei modi di sviluppo:
 | return and comment             | =M-j=             |
 | toggle block visibility        | =C-c +=           |
 | hide block                     | =C-c -=           |
+| hide level                     | =C-c C--=         |
 | hide all blocks                | =C-c M--=         |
 | show all block                 | =C-c M-+=         |
 |--------------------------------+-------------------|
@@ -1718,6 +1719,7 @@ essere da meno.
   :bind (:map hs-minor-mode-map
               ("C-c +" . hs-toggle-hiding)
               ("C-c -" . hs-hide-block)
+              ("C-c C--" . hs-hide-level)
               ("C-c M-+" . hs-show-all)
               ("C-c M--" . hs-hide-all))
   :hook (prog-mode sgml-mode))
