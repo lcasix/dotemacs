@@ -1979,7 +1979,9 @@ specifico è letto dalla variabile =EMACS_ESLINT_PATH=.
 #+begin_src emacs-lisp
 (use-package js
   :after flycheck
-  :init (setq flycheck-javascript-eslint-executable (getenv "EMACS_ESLINT_PATH")))
+  :custom
+  (flycheck-javascript-eslint-executable (getenv "EMACS_ESLINT_PATH"))
+  :hook (js-mode . lsp))
 #+end_src
 
 =eslint-fix= fa in modo che al salvataggio del file vengano possibilmente applicati
@@ -1988,8 +1990,9 @@ i /fix/ suggeriti da ESLint.
 (use-package eslint-fix
   :ensure t
   :after js
+  :custom
+  (eslint-fix-executable (getenv "EMACS_ESLINT_PATH"))
   :config
-  (setq eslint-fix-executable (getenv "EMACS_ESLINT_PATH"))
   (add-hook 'js-mode-hook (lambda () (add-hook 'after-save-hook 'eslint-fix nil t))))
 #+end_src
 
@@ -1998,24 +2001,11 @@ Abilito il supporto a TypeScript.
 (use-package typescript-mode
   :ensure t
   :config
-  (add-hook 'typescript-mode-hook (lambda () (add-hook 'after-save-hook 'eslint-fix nil t))))
+  (add-hook 'typescript-mode-hook (lambda () (add-hook 'after-save-hook 'eslint-fix nil t)))
+  :hook (typescript-mode . lsp))
 #+end_src
 
-[[https://ternjs.net/][Tern]] è un motore di analisi del codice JavsScript, che tra le altre
-cose fornisce il l'autocompletamento, suggerisce gli argomenti delle
-funzioni, il refactoring, ecc.
-#+begin_src emacs-lisp
-(use-package tern
-  :ensure t
-  :after js
-  :hook ((js-mode typescript-mode vue-mode web-mode) . tern-mode))
-
-(use-package company-tern
-  :ensure t
-  :after (company tern)
-  :config
-  (push 'company-tern company-backends))
-#+end_src
+Le funzionalià di IDE sono fornite da LSP tramite il server [[https://emacs-lsp.github.io/lsp-mode/page/lsp-typescript/][Theia]] (=ts-ls=).
 
 Il pacchetto [[https://github.com/mooz/js-doc][js-doc]] aiuta a documentare il codice JavaScript in
 formato [[https://jsdoc.app/][JSDoc]]. Quando si scrive un commento basta premere =@= per
