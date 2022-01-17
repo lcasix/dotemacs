@@ -2463,7 +2463,7 @@ Nella scansione automatica l'attesa fra una pagina e l'altra è
 definita dalla variabile =scanner-scan-delay=, il cui /default/ è 3
 secondi.
 
-Il pacchetto /scanner/ fa uso di alcuni comandi che è necessario
+Il pacchetto /scanner/ fa uso di alcuni programmi che è necessario
 installare:
 #+begin_src bash :eval no
 sudo apt install sane-utils tesseract-ocr tesseract-ocr-{eng,ita}
@@ -2483,7 +2483,39 @@ aggiustati luminosità e contrasto.
   (scanner-tesseract-outputs '("pdf"))
   (scanner-scanimage-switches '("--brightness" "-15" "--contrast" "15"))
   (scanner-tessdata-dir "/usr/share/tesseract-ocr/4.00/tessdata/")
-  (scanner-tessdata-configdir "/usr/share/tesseract-ocr/4.00/tessdata/configs"))
+  (scanner-tessdata-configdir "/usr/share/tesseract-ocr/4.00/tessdata/configs")
+  (scanner-tesseract-program "~/bin/scanner-pdf"))
+#+end_src
+
+Il pacchetto utilizza Tesseract per produrre i file PDF. Tesseract è
+utile per fare OCR, ma produce file molto grandi. Generalmente non mi
+serve produrre PDF con il testo riconosciuto, ma piuttosto dei PDF
+dalle dimensioni ottimizzate. Per questo imposto la variabile
+=scanner-tesseract-program= per utilizzare al posto di =tesseract= uno
+script compatibile con le aspettative del pacchetto, ma che invece
+produce PDF ottimizzati.
+#+begin_src bash :eval no :tangle no
+# quando viene chiesta la versione
+if [ $1 = '--version' ]; then
+    echo "tesseract 4.1.1"
+    exit 0
+fi
+
+scanlist=${1:?fornire elenco delle scansioni}
+outfile=${2:?fornire un file di output}
+
+# converte le immagini nell'elenco delle scansioni in un file PDF
+mapfile images < "$scanlist"
+convert ${images[@]} "$outfile.tmp.pdf"
+# ottimizza il file PDF prodotto da convert
+gs -q -dBATCH -dNOPAUSE -sPAPERSIZE=a4 -sDEVICE=pdfwrite -sOutputFile="$outfile.pdf" "$outfile.tmp.pdf"
+rm "$outfile.tmp.pdf"
+#+end_src
+
+Per ripristinare temporanemente Tesseract si può usare un comando
+come questo:
+#+begin_src emacs-lisp :tangle no
+(setq scanner-tesseract-program (nth 0 (process-lines "bash" "-c" "command -v tesseract")))
 #+end_src
 
 Un'operazione che mi trovo a fare spesso dopo le scansioni è il
