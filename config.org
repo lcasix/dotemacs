@@ -216,7 +216,7 @@ risultato direttamente nel buffer corrente.
 (global-set-key (kbd "<f9>") 'quick-calc)
 #+end_src
 
-** Help
+** Help                                                                 :env:
 Quando si digita un /prefix key/ (=C-x=, =C-c= o altri), /Which key/
 fornisce indicazioni sulle combinazioni disponibili:
 #+BEGIN_SRC emacs-lisp
@@ -226,10 +226,17 @@ fornisce indicazioni sulle combinazioni disponibili:
   :config (which-key-mode))
 #+END_SRC
 
-Inoltre è utile uno /shortcut/ per aprire rapidamente il manuale di
+È utile uno /shortcut/ per aprire rapidamente il manuale di
 Org mode.
 #+begin_src emacs-lisp
 (global-set-key (kbd "C-h o") 'org-info)
+#+end_src
+
+Questo stesso file è il manuale del /mio/ Emacs, per cui definisco un
+binding per aprirlo rapidamente.
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-h e") (lambda() (interactive)
+                                 (find-file-other-window (getenv "EMACS_CONFIG"))))
 #+end_src
 
 
