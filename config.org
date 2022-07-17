@@ -1414,6 +1414,70 @@ servono a gestire il frame di /pop-up/ aperto dal browser.
 Riferimenti:
 - http://www.diegoberrocal.com/blog/2015/08/19/org-protocol/
 
+** Work time
+Con Org si possono registrare i propri tempi di lavoro, impartendo i
+comandi =org-clock-in= e =org-clock-out= sulle /headline/.
+
+| function                 | binding               |
+|--------------------------+-----------------------|
+| clock in                 | =C-c C-x C-i=         |
+| clock in selected task   | =C-u C-c C-x C-i=     |
+| clock in and set default | =C-u C-u C-c C-x C-i= |
+| re-clock last            | =C-c C-x C-x=         |
+| clock out                | =C-c C-x C-o=         |
+| cancel clock             | =C-c C-x C-q=         |
+| jump to clocked          | =C-c C-x C-j=         |
+| display summary          | =C-c C-x C-d=         |
+| insert dynamic block     | =C-c C-x x=           |
+
+Si può inserire una tabella di riepilogo tramite =C-c C-x x=. Per
+esempio:
+#+begin_src org :tangle no
+,#+BEGIN: clocktable :scope subtree :maxlevel 3 :lang it
+,#+CAPTION: Riepilogo ore al [2021-10-10 dom 19:08]
+| Attività         | Tempo  | Tariffa EUR/h | Totale EUR |
+|------------------+--------+---------------+------------|
+| *Tempo totale*   | *6:00* |         50.00 |     300.00 |
+|------------------+--------+---------------+------------|
+| \_  Clock table  |        |          6:00 |            |
+| \_    Attività 1 |        |               |       0:30 |
+| \_    Attività 2 |        |               |       1:30 |
+| \_    Attività 3 |        |               |       4:00 |
+,#+TBLFM: @2$3='(org-entry-get nil "tariffa");%.2f::@2$4=@2$3*@2$2;t::@1$3=string("Tariffa EUR/h")::@1$4=string("Totale EUR")
+,#+END:
+#+end_src
+
+Le formule in coda inseriscono la tariffa oraria nella terza colonna
+leggendola da una property =tariffa= e la moltiplicano per le ore
+nella quarta. Per poter effettuare questo calcolo è necessario
+impostare come =h:mm= il formato dei tempi, come si vede in seguito.
+Le restanti inseriscono le intestazioni.
+
+Di seguito imposto la localizzazione italiana, la variabile
+=org-duration-format= con il formato dei tempi e =org-duration-units=
+che determina la giornata lavorativa come di 8 ore, la settimana di 5
+giornate lavorative, il mese di 20 giornate e l'anno di 200 giornate.
+#+begin_src emacs-lisp
+(use-package org-clock
+  :after org
+  :config
+  (push '("it" "File" "L" "Timestamp" "Attività" "Tempo" "TUTTO" "Tempo totale" "Tempo sul file" "Riepilogo al")
+        org-clock-clocktable-language-setup)
+  :custom
+  (org-duration-format (quote h:mm))
+  (org-duration-units
+   `(("min" . 1)
+     ("h" . 60)
+     ("d" . ,(* 60 8))
+     ("w" . ,(* 60 8 5))
+     ("m" . ,(* 60 8 20))
+     ("y" . ,(* 60 8 200)))))
+#+end_src
+
+Riferimenti:
+- [[https://stackoverflow.com/a/54376827][Set clock table duration format for emacs org-mode]]
+- [[https://www.adventuresinwhy.com/post/org-mode-timekeeping/][Org Mode Timekeeping]]
+
 ** PlantUML                                                             :env:
 [[https://plantuml.com/][PlantUML]] serve a generare diagrammi UML partendo da un formato
 testuale. Su Debian lo si può installare con:
