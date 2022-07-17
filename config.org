@@ -1928,6 +1928,11 @@ cosa fa Orgstuct per le liste. Per cui li abilito negli opportuni
 (add-hook 'git-commit-setup-hook 'orgalist-mode)
 #+end_src
 
+[[https://github.com/magit/orgit][Orgit]] abilita il link in Org a revisioni e log di Git.
+#+begin_src emacs-lisp
+(use-package orgit :ensure t)
+#+end_src
+
 ** Supporto tags TODO/FIXME
 Gli IDE evidenziano le righe di codice commentate con parole chiave
 tipo =TODO= e =FIXME=. Il pacchetto [[https://github.com/vincekd/comment-tags][comment-tags]] fa esattamente
