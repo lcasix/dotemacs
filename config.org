@@ -102,9 +102,6 @@ mode/ abilita "Open recent" nel menu "File":
 ;; bookmarks
 (setq bookmark-save-flag 1) ;; save everytime bookmark is changed
 
-;; save and restore point of visited files
-(save-place-mode 1)
-
 ;; enable recent files
 (recentf-mode)
 
@@ -937,7 +934,11 @@ base.
         ("C-c C-x g" . grep)
         ("M-N" . counsel-org-goto)
         ("M-n" . org-next-link)
-        ("M-p" . org-previous-link))
+        ("M-p" . org-previous-link)
+        ("C-c C-<tab>" . org-force-cycle-archived))
+
+  :custom
+  (org-babel-python-command "python3")
 
   :config
   (require 'org-id)
@@ -1216,6 +1217,12 @@ uso anche per lavoro.
       '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+#+end_src
+
+*** HTML
+Imposto HTML5 come formato di esportazione HTML predefinito.
+#+begin_src emacs-lisp
+(setq org-html-doctype "html5")
 #+end_src
 
 *** Reveal                                                              :env:
@@ -1498,8 +1505,8 @@ questa sezione.
 #+end_src
 
 Il /path/ al JAR di PlantUML è letto dalla variabile
-=EMACS_PLANTUML_JAR=; se non è assegnata si usa quello installato su
-Debian.
+=EMACS_PLANTUML_JAR=; se non è assegnata si usa quello installato sul
+sistema.
 
 ** Ditaa                                                                :env:
 [[http://ditaa.sourceforge.net/][Ditaa]] converte diagrammi fatti in ASCII art in immagini. Non lo uso
