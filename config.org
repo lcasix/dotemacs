@@ -1696,11 +1696,11 @@ Ecco un riepilogo dei /binding/ usati nei modi di sviluppo:
 | move line or region up/down    | =M-up= / =M-down= |
 | put comment at the end of line | =M-;=             |
 | return and comment             | =M-j=             |
-| toggle block visibility        | =C-c +=           |
-| hide block                     | =C-c -=           |
+| toggle hiding                  | =C-c C-+=         |
 | hide level                     | =C-c C--=         |
-| hide all blocks                | =C-c M--=         |
+| hide block                     | =C-c -=           |
 | show all block                 | =C-c M-+=         |
+| hide all blocks                | =C-c M--=         |
 |--------------------------------+-------------------|
 | jump to definition / back      | =M-.= / =M-,=     |
 | navigate symbol's occurences   | =M-p= / =M-n=     |
@@ -1789,14 +1789,13 @@ L'/hide show minor mode/ collassa ed espande blocchi di codice e
 commenti. È una funzione che hanno tutti gli IDE e Emacs non può
 essere da meno.
 #+begin_src emacs-lisp
-(use-package hs-minor-mode
-  :bind (:map hs-minor-mode-map
-              ("C-c +" . hs-toggle-hiding)
-              ("C-c -" . hs-hide-block)
-              ("C-c C--" . hs-hide-level)
-              ("C-c M-+" . hs-show-all)
-              ("C-c M--" . hs-hide-all))
-  :hook (prog-mode sgml-mode))
+(require 'hideshow)
+(define-key hs-minor-mode-map (kbd "C-c C-+") #'hs-toggle-hiding)
+(define-key hs-minor-mode-map (kbd "C-c C--") #'hs-hide-level)
+(define-key hs-minor-mode-map (kbd "C-c -") #'hs-hide-block)
+(define-key hs-minor-mode-map (kbd "C-c M-+") #'hs-show-all)
+(define-key hs-minor-mode-map (kbd "C-c M--") #'hs-hide-all)
+(add-hook 'prog-mode-hook (lambda () (hs-minor-mode 1)))
 #+end_src
 Il /binding/ di default è sul /prefix/ =C-c @=, che non è dei
 migliori.
