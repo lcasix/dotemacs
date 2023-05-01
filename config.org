@@ -969,11 +969,6 @@ base.
   ;; babel block src indentation
   (setq org-edit-src-content-indentation 0)
   
-  ;; TODO sono necessari?
-  ;; enable org-mode for .org and .org.txt files
-  (add-to-list 'auto-mode-alist '("\\.org\\(\\.txt\\)?$" . org-mode))
-  (setq org-agenda-file-regexp "\\.org\\(\\.txt\\)?$")
-  
   ;; refile targets
   (setq org-outline-path-complete-in-steps nil)
   (setq org-refile-use-outline-path 'full-file-path)
