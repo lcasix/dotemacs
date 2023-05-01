@@ -58,7 +58,6 @@ nella variabile =package-list=.
 (require 'package)
 
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-(add-to-list 'package-archives '("org-mode" . "http://orgmode.org/elpa/") t)
 
 (setq package-list
       '(
@@ -71,16 +70,12 @@ nella variabile =package-list=.
         hydra
         ivy-hydra
         ob-restclient
-        org-link-minor-mode
-        org-plus-contrib
+        org-contrib
         ox-hugo
-        ox-jira
         systemd
         tidy
         yaml-mode
         ))
-
-(package-initialize)
 
 (unless package-archive-contents
   (package-refresh-contents))
@@ -1945,9 +1940,6 @@ dei link in stile Org ed è quello che fa =org-link-minor-mode=. Stessa
 cosa fa Orgstuct per le liste. Per cui li abilito negli opportuni
 /mode/.
 #+begin_src emacs-lisp
-(use-package org-link-minor-mode
-  :hook (log-view-mode log-edit-mode git-commit-setup))
-
 ;; enable orgalist in VC and Magit
 (add-hook 'log-edit-mode-hook 'orgalist-mode)
 (add-hook 'git-commit-setup-hook 'orgalist-mode)
