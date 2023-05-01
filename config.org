@@ -1031,10 +1031,15 @@ blocchi =BEGIN...END= velocemente.
 (use-package org-tempo
   :after org
   :config
-  (push '("n" . "note") org-structure-template-alist))
+  (push '("n" . "note") org-structure-template-alist)
+  (push '("N" . "annotation") org-structure-template-alist)
+  )
 #+end_src
-Aggiungo un blocco =BEGIN_NOTE= che uso soprattutto per l'esportazione
-in EPUB.
+Qui aggiungo le espansioni per i seguenti blocchi:
+- un blocco =BEGIN_NOTE= che uso soprattutto per l'esportazione in EPUB
+- un blocco =BEGIN_ANNOTATION= che uso in Latex per inserire nei
+  documenti delle annotazioni che possono essere eliminate
+  nell'esportazione
 
 ** Agenda                                                               :env:
 L'agenda è una parte fondamentale. Permette sia di creare riepiloghi
