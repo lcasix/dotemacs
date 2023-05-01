@@ -548,6 +548,16 @@ funzionalità di "search & replace":
   :after visual-regexp)
 #+end_src
 
+** Spell checking
+Per abilitare il flyspell-mode per buffer:
+#+begin_src org
+# -*- flyspell-mode: t -*-
+#+end_src
+
+Binding:
+- =M-$= correzione della parola
+- =C-,= prossimo errore
+
 ** Navigazione
 | function          | binding     |
 |-------------------+-------------|
