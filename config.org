@@ -1929,10 +1929,16 @@ specialmente se paragonato a sistemi efficaci, ma più semplici come
 l'ottimo Subversion. Con Magit la gestione di Git fa invidia agli IDE
 più quotati!
 
-Configurarlo è semplicissimo:
+La mia configurazione:
 #+begin_src emacs-lisp
-(use-package magit :ensure t)
+(use-package magit
+  :ensure t
+  :config
+  (magit-add-section-hook 'magit-status-sections-hook
+                          #'magit-insert-assume-unchanged-files 'append t))
 #+end_src
+La chiamata =magit-add-section-hook= aggiunge l'elenco dei file
+"assumed unchanged" allo /status buffer/.
 
 Quando si scrivono i log dei commit è utile la possibilità di inserire
 dei link in stile Org ed è quello che fa =org-link-minor-mode=. Stessa
