@@ -62,9 +62,6 @@ nella variabile =package-list=.
 (setq package-list
       '(
         use-package
-        docker
-        docker-tramp
-        dockerfile-mode
         flycheck-plantuml
         flymake-jslint
         hydra
