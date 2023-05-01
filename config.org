@@ -69,6 +69,7 @@ nella variabile =package-list=.
         ob-restclient
         org-contrib
         ox-hugo
+        ox-epub
         systemd
         tidy
         yaml-mode
