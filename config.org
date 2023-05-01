@@ -1179,7 +1179,16 @@ Alcune impostazioni per esportare l'agenda in formato ICS.
 (setq org-icalendar-combined-agenda-file (or (getenv "EMACS_AGENDA_EXPORT") "~/org-agenda.ics"))
 (setq org-agenda-default-appointment-duration 60)
 (setq org-icalendar-include-body nil)
+(setq org-icalendar-include-todo t)
+(setq org-icalendar-use-scheduled '(event-if-not-todo todo-start))
+(setq org-icalendar-use-deadline '(event-if-not-todo todo-due))
 #+end_src
+
+#+begin_comment
+Per ottenere il link di Dropbox al calendario, per importarlo in
+Google Calendar p.es., occorre trasformarlo come spiegatato qui:
+- https://zapier.com/blog/generate-direct-dropbox-link/
+#+end_comment
 
 ** Exporting
 Mi piace tantissimo poter "esportare" i file Org in vari formati, per
